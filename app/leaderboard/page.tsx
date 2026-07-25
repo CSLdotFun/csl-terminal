@@ -2,13 +2,15 @@
 
 import { Trophy } from "lucide-react"
 import TNav from "@/components/TNav"
+import SkinSides from "@/components/SkinSides"
 
 export default function Leaderboard() {
   return (
     <div className="min-h-screen bg-[#faf9f6] text-[#0e1512]">
       <TNav active="leaderboard" light title="Leaderboard" />
+      <SkinSides left="/cs2-ak-47-vulcan-skin.jpg" right="/cs2-awp-lightning-strike.jpg" />
 
-      <main className="max-w-[900px] mx-auto px-5 py-14">
+      <main className="relative z-10 max-w-[900px] mx-auto px-5 py-14">
         <h1 className="text-3xl font-bold tracking-[-0.02em] mb-2">Top traders</h1>
         <p className="text-[#0e1512]/50 mb-10">Ranked by realized PnL. Resets every season.</p>
 

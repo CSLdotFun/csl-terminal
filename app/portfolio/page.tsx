@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import TNav from "@/components/TNav"
+import SkinSides from "@/components/SkinSides"
 import { loadAccount, type Account } from "@/lib/account"
 
 const API = process.env.NEXT_PUBLIC_API_URL || ""
@@ -60,7 +61,8 @@ export default function Portfolio() {
   return (
     <div className="min-h-screen bg-[#faf9f6] text-[#0e1512]">
       <TNav active="portfolio" light title="Portfolio" />
-      <main className="max-w-[1100px] mx-auto px-5 py-10">
+      <SkinSides left="/cs2-ak-47-fire-serpent.jpg" right="/cs2-m4a4-howl.png" />
+      <main className="relative z-10 max-w-[1100px] mx-auto px-5 py-10">
         <h1 className="text-3xl font-bold tracking-[-0.02em] mb-8">Your account</h1>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-10">

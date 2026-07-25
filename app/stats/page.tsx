@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import TNav from "@/components/TNav"
+import SkinSides from "@/components/SkinSides"
 import { ICONS } from "../trade/icons"
 
 const API = process.env.NEXT_PUBLIC_API_URL || ""
@@ -63,7 +64,8 @@ export default function Stats() {
   return (
     <div className="min-h-screen bg-[#faf9f6] text-[#0e1512]">
       <TNav active="stats" title="Stats" light />
-      <main className="max-w-[1100px] mx-auto px-5 py-10">
+      <SkinSides left="/cs2-karambit-fade-knife.jpg" right="/cs2-m9-bayonet-doppler.jpg" />
+      <main className="relative z-10 max-w-[1100px] mx-auto px-5 py-10">
         <div className="flex items-center gap-3 mb-8 flex-wrap">
           <h1 className="text-3xl font-bold tracking-[-0.02em]">Market stats</h1>
           {source && !err && (
