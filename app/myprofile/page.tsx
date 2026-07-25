@@ -111,48 +111,48 @@ export default function MyProfile() {
   const label = wallet ? wallet.slice(0, 6) + "…" + wallet.slice(-4) : "Account"
   const via = "Wallet"
 
-  if (!ready) return <div className="min-h-screen bg-[#050b14]" />
+  if (!ready) return <div className="min-h-screen bg-[#faf9f6]" />
 
   return (
-    <div className="min-h-screen bg-[#050b14] text-white">
-      <TNav active="" title="My Profile" />
+    <div className="min-h-screen bg-[#faf9f6] text-[#0e1512]">
+      <TNav active="" title="My Profile" light />
 
       {!authenticated ? (
         <div className="max-w-lg mx-auto mt-28 text-center">
           <div className="text-xl font-bold">Connect your wallet to see your profile</div>
-          <div className="text-sm text-white/40 mt-2">Balance, positions, history and deposits live here.</div>
+          <div className="text-sm text-[#0e1512]/40 mt-2">Balance, positions, history and deposits live here.</div>
           <div className="mt-6 flex justify-center"><ConnectButton /></div>
         </div>
       ) : (
         <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
           {/* identity */}
-          <div className="flex items-center gap-5 rounded-2xl border border-white/10 bg-[#070f1a] p-6">
+          <div className="flex items-center gap-5 rounded-2xl border border-black/10 bg-[#fbfaf7] p-6">
             <div className="relative group">
               {shownAvatar ? (
-                <img src={shownAvatar} alt="" className="w-20 h-20 rounded-full object-cover border border-white/15" />
+                <img src={shownAvatar} alt="" className="w-20 h-20 rounded-full object-cover border border-black/15" />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-2xl font-bold text-emerald-400">
+                <div className="w-20 h-20 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-2xl font-bold text-emerald-700">
                   {label.replace("@", "").slice(0, 1).toUpperCase()}
                 </div>
               )}
               <button onClick={pickAvatar} title="Change avatar"
-                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 flex items-center justify-center backdrop-blur">
+                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-black/10 hover:bg-white/20 border border-black/15 flex items-center justify-center backdrop-blur">
                 <Camera size={13} />
               </button>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onAvatarFile} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-xl font-bold truncate">{label}</div>
-              <div className="text-xs text-white/40 mt-0.5">Signed in with {via}</div>
+              <div className="text-xs text-[#0e1512]/40 mt-0.5">Signed in with {via}</div>
               {wallet && (
-                <div className="text-xs font-mono text-white/35 mt-1 truncate">{wallet}</div>
+                <div className="text-xs font-mono text-[#0e1512]/35 mt-1 truncate">{wallet}</div>
               )}
               {avatar && (
-                <button onClick={resetAvatar} className="text-[11px] text-white/30 hover:text-white/60 mt-1">Reset avatar</button>
+                <button onClick={resetAvatar} className="text-[11px] text-[#0e1512]/30 hover:text-[#0e1512]/60 mt-1">Reset avatar</button>
               )}
             </div>
             <div className="text-right">
-              <div className="text-[11px] uppercase tracking-wider text-white/35">Balance</div>
+              <div className="text-[11px] uppercase tracking-wider text-[#0e1512]/35">Balance</div>
               <div className="text-2xl font-bold font-mono">${fmt(balance)}</div>
             </div>
           </div>
@@ -170,7 +170,7 @@ export default function MyProfile() {
           <div className="grid md:grid-cols-2 gap-6">
             {/* deposit */}
             <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.04] p-5">
-              <div className="text-[11px] uppercase tracking-wider text-emerald-300/70">Deposit USDG (Robinhood Chain)</div>
+              <div className="text-[11px] uppercase tracking-wider text-emerald-700/70">Deposit USDG (Robinhood Chain)</div>
               {depositInfo?.enabled && depositInfo.address ? (
                 <>
                   {/* one click: the wallet signs a USDG transfer straight to this
@@ -180,33 +180,33 @@ export default function MyProfile() {
                   </div>
 
                   <details className="mt-3 group">
-                    <summary className="text-[11px] text-white/40 hover:text-white/70 cursor-pointer list-none select-none">
+                    <summary className="text-[11px] text-[#0e1512]/40 hover:text-[#0e1512]/70 cursor-pointer list-none select-none">
                       Or send USDG manually ▾
                     </summary>
                     <div className="mt-2 flex items-center gap-2">
-                      <div className="font-mono text-xs break-all flex-1 text-white/70">{depositInfo.address}</div>
+                      <div className="font-mono text-xs break-all flex-1 text-[#0e1512]/70">{depositInfo.address}</div>
                       <button onClick={() => { navigator.clipboard.writeText(depositInfo.address!); setCopied(true); setTimeout(() => setCopied(false), 1200) }}
-                        className="shrink-0 text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10 flex items-center gap-1.5">
+                        className="shrink-0 text-xs px-3 py-1.5 rounded-lg bg-black/10 hover:bg-black/15 border border-black/10 flex items-center gap-1.5">
                         {copied ? <Check size={12} /> : <Copy size={12} />}{copied ? "Copied" : "Copy"}
                       </button>
                     </div>
-                    <div className="text-[11px] text-white/35 mt-2">This address belongs to your account and never changes.</div>
+                    <div className="text-[11px] text-[#0e1512]/35 mt-2">This address belongs to your account and never changes.</div>
                   </details>
 
-                  <div className="text-[11px] text-white/35 mt-3">USDG on Robinhood Chain only. Max ${depositInfo.maxPerUser} per account in beta. Credits within ~1 min.</div>
+                  <div className="text-[11px] text-[#0e1512]/35 mt-3">USDG on Robinhood Chain only. Max ${depositInfo.maxPerUser} per account in beta. Credits within ~1 min.</div>
                 </>
               ) : (
-                <div className="text-sm text-white/40 mt-2">USDG deposits open at public launch. Until then your balance stays at $0.</div>
+                <div className="text-sm text-[#0e1512]/40 mt-2">USDG deposits open at public launch. Until then your balance stays at $0.</div>
               )}
             </div>
 
             {/* withdraw */}
-            <div className="rounded-2xl border border-white/10 bg-[#070f1a] p-5">
-              <div className="text-[11px] uppercase tracking-wider text-white/35">Withdraw USDG</div>
+            <div className="rounded-2xl border border-black/10 bg-[#fbfaf7] p-5">
+              <div className="text-[11px] uppercase tracking-wider text-[#0e1512]/35">Withdraw USDG</div>
               <input value={wAmt} onChange={(e) => setWAmt(e.target.value)} inputMode="decimal" placeholder="Amount"
-                className="mt-2 w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm font-mono outline-none focus:border-white/25" />
+                className="mt-2 w-full bg-black/5 border border-black/10 rounded-lg px-3 py-2.5 text-sm font-mono outline-none focus:border-black/25" />
               <input value={wAddr} onChange={(e) => setWAddr(e.target.value)} placeholder="Robinhood Chain address (0x…)"
-                className="mt-2 w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm font-mono outline-none focus:border-white/25" />
+                className="mt-2 w-full bg-black/5 border border-black/10 rounded-lg px-3 py-2.5 text-sm font-mono outline-none focus:border-black/25" />
               <button onClick={async () => {
                 setWMsg(null)
                 try {
@@ -218,21 +218,21 @@ export default function MyProfile() {
                   setWMsg(res.ok ? (d.status === "sent" ? "Sent on-chain ✓" : "Requested — processing") : wErr(d))
                   if (res.ok) { setWAmt(""); refresh() }
                 } catch { setWMsg("Request failed") }
-              }} className="mt-3 w-full text-sm font-semibold px-4 py-2.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10 transition-colors">Withdraw</button>
-              {wMsg && <div className="text-xs text-white/50 mt-2">{wMsg}</div>}
+              }} className="mt-3 w-full text-sm font-semibold px-4 py-2.5 rounded-lg bg-black/10 hover:bg-black/15 border border-black/10 transition-colors">Withdraw</button>
+              {wMsg && <div className="text-xs text-[#0e1512]/50 mt-2">{wMsg}</div>}
             </div>
           </div>
 
           {/* history */}
-          <div className="rounded-2xl border border-white/10 bg-[#070f1a] overflow-hidden">
-            <div className="px-5 py-3.5 text-[11px] uppercase tracking-wider text-white/35 border-b border-white/10">Trade History</div>
+          <div className="rounded-2xl border border-black/10 bg-[#fbfaf7] overflow-hidden">
+            <div className="px-5 py-3.5 text-[11px] uppercase tracking-wider text-[#0e1512]/35 border-b border-black/10">Trade History</div>
             {history.length === 0 ? (
-              <div className="px-5 py-10 text-center text-white/30 text-sm">No closed trades yet — open one in the <a href="/trade" className="text-emerald-400 hover:underline">terminal</a>.</div>
+              <div className="px-5 py-10 text-center text-[#0e1512]/30 text-sm">No closed trades yet — open one in the <a href="/trade" className="text-emerald-700 hover:underline">terminal</a>.</div>
             ) : (
               <table className="w-full text-sm">
                 <tbody>
                   {history.slice(0, 12).map((t) => (
-                    <tr key={t.id} className="border-b border-white/5 last:border-0">
+                    <tr key={t.id} className="border-b border-black/5 last:border-0">
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2.5">
                           {t.image && <img src={t.image} alt="" className="w-9 h-7 object-contain" />}
@@ -240,16 +240,16 @@ export default function MyProfile() {
                         </div>
                       </td>
                       <td className="px-3 py-3">
-                        <span className={`inline-flex items-center gap-1 text-xs font-semibold ${t.side === "short" ? "text-red-400" : "text-emerald-400"}`}>
+                        <span className={`inline-flex items-center gap-1 text-xs font-semibold ${t.side === "short" ? "text-red-600" : "text-emerald-700"}`}>
                           {t.side === "short" ? <TrendingDown size={12} /> : <TrendingUp size={12} />}
                           {t.side === "short" ? "Short" : "Long"} · {t.leverage}x
                         </span>
                       </td>
-                      <td className="px-3 py-3 font-mono text-white/50 text-xs">${fmt(t.entry)} → ${fmt(t.exit)}</td>
-                      <td className={`px-3 py-3 font-mono font-semibold ${Number(t.pnl) >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                      <td className="px-3 py-3 font-mono text-[#0e1512]/50 text-xs">${fmt(t.entry)} → ${fmt(t.exit)}</td>
+                      <td className={`px-3 py-3 font-mono font-semibold ${Number(t.pnl) >= 0 ? "text-emerald-700" : "text-red-600"}`}>
                         {Number(t.pnl) >= 0 ? "+" : ""}${fmt(t.pnl)}
                       </td>
-                      <td className="px-5 py-3 text-right text-xs text-white/30">{new Date(t.closedAt).toLocaleDateString()}</td>
+                      <td className="px-5 py-3 text-right text-xs text-[#0e1512]/30">{new Date(t.closedAt).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -264,9 +264,9 @@ export default function MyProfile() {
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: "up" | "down" }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-[#070f1a] px-4 py-3.5">
-      <div className="text-[10px] uppercase tracking-wider text-white/35">{label}</div>
-      <div className={`text-lg font-bold font-mono mt-1 ${tone === "up" ? "text-emerald-400" : tone === "down" ? "text-red-400" : ""}`}>{value}</div>
+    <div className="rounded-xl border border-black/10 bg-[#fbfaf7] px-4 py-3.5">
+      <div className="text-[10px] uppercase tracking-wider text-[#0e1512]/35">{label}</div>
+      <div className={`text-lg font-bold font-mono mt-1 ${tone === "up" ? "text-emerald-700" : tone === "down" ? "text-red-600" : ""}`}>{value}</div>
     </div>
   )
 }

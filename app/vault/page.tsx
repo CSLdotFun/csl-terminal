@@ -12,14 +12,14 @@ export default function Vault() {
     fetch(`${API}/api/vault`, { cache: "no-store" }).then((r) => r.json()).then(setStats).catch(() => {})
   }, [])
   return (
-    <div className="min-h-screen bg-[#050b14] text-white">
-      <TNav active="vault" title="Vault" />
+    <div className="min-h-screen bg-[#faf9f6] text-[#0e1512]">
+      <TNav active="vault" light title="Vault" />
       <main className="max-w-[900px] mx-auto px-5 py-10">
         <div className="flex items-center gap-3 mb-2 flex-wrap">
           <h1 className="text-3xl font-bold tracking-[-0.02em]">CSL Liquidity Vault</h1>
-          <span className="text-[11px] px-2.5 py-1 rounded-full border border-amber-500/40 text-amber-400">OPENS AT LAUNCH</span>
+          <span className="text-[11px] px-2.5 py-1 rounded-full border border-amber-500/40 text-amber-600">OPENS AT LAUNCH</span>
         </div>
-        <p className="text-white/50 mb-10 max-w-[640px] leading-relaxed">
+        <p className="text-[#0e1512]/50 mb-10 max-w-[640px] leading-relaxed">
           Deposit USDG, be the house. The vault takes the other side of trader positions
           and earns protocol fees — losses and gains are shared pro-rata by depositors.
         </p>
@@ -39,7 +39,7 @@ export default function Vault() {
         </div>
 
         <h2 className="text-lg font-semibold mb-3">Protocol parameters</h2>
-        <div className="rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden mb-10">
+        <div className="rounded-xl border border-black/10 bg-black/[0.02] overflow-hidden mb-10">
           <table className="w-full text-sm">
             <tbody>
               <Row k="Taker fee" v="0.06% of notional" />
@@ -52,10 +52,10 @@ export default function Vault() {
           </table>
         </div>
 
-        <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] p-4 text-sm text-white/60 leading-relaxed">
+        <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] p-4 text-sm text-[#0e1512]/60 leading-relaxed">
           The vault opens together with USDG deposits at public launch — the numbers above
           are the real protocol parameters, and TVL starts from a true zero. No pre-seeded
-          balances, no projected APRs. Follow <a href="https://x.com/csldotfun" className="text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer">@csldotfun</a> for the launch date.
+          balances, no projected APRs. Follow <a href="https://x.com/csldotfun" className="text-emerald-700 hover:underline" target="_blank" rel="noopener noreferrer">@csldotfun</a> for the launch date.
         </div>
       </main>
     </div>
@@ -64,25 +64,25 @@ export default function Vault() {
 
 function Card({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-white/[0.04] border border-white/5 p-3.5">
-      <div className="text-[10px] uppercase tracking-wider text-white/40 mb-1">{label}</div>
+    <div className="rounded-xl bg-black/[0.04] border border-black/5 p-3.5">
+      <div className="text-[10px] uppercase tracking-wider text-[#0e1512]/40 mb-1">{label}</div>
       <div className="font-mono font-semibold">{value}</div>
     </div>
   )
 }
 function Step({ n, t, d }: { n: string; t: string; d: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-      <div className="text-emerald-400 font-mono text-sm mb-2">{n}</div>
+    <div className="rounded-2xl border border-black/10 bg-black/[0.03] p-5">
+      <div className="text-emerald-700 font-mono text-sm mb-2">{n}</div>
       <h3 className="font-semibold mb-1.5">{t}</h3>
-      <p className="text-white/50 text-sm leading-relaxed">{d}</p>
+      <p className="text-[#0e1512]/50 text-sm leading-relaxed">{d}</p>
     </div>
   )
 }
 function Row({ k, v }: { k: string; v: string }) {
   return (
-    <tr className="border-t border-white/5 first:border-0">
-      <td className="px-4 py-2.5 text-white/45 text-xs uppercase tracking-wider">{k}</td>
+    <tr className="border-t border-black/5 first:border-0">
+      <td className="px-4 py-2.5 text-[#0e1512]/45 text-xs uppercase tracking-wider">{k}</td>
       <td className="px-4 py-2.5 text-right font-mono text-sm">{v}</td>
     </tr>
   )

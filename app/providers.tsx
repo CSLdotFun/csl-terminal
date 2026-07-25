@@ -13,7 +13,7 @@ import { robinhoodChain } from "@/lib/chain"
 const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID || "csl_walletconnect"
 
 // EVM wallets only — this is Robinhood Chain (Arbitrum Orbit L2). No Phantom /
-// EVM wallets only. MetaMask and Robinhood Wallet (injected) lead, then the rest.
+// Solana wallets. MetaMask and Robinhood Wallet (injected) lead, then the rest.
 const connectors = connectorsForWallets(
   [
     {

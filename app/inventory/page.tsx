@@ -40,18 +40,18 @@ export default function Inventory() {
   const hedgeable = items?.filter((i) => i.cslKey) ?? []
 
   return (
-    <div className="min-h-screen bg-[#050b14] text-white">
-      <TNav active="inventory" title="Inventory" />
+    <div className="min-h-screen bg-[#faf9f6] text-[#0e1512]">
+      <TNav active="inventory" light title="Inventory" />
       <main className="max-w-[1100px] mx-auto px-5 py-10">
         <h1 className="text-3xl font-bold tracking-[-0.02em] mb-2">Your Steam inventory</h1>
-        <p className="text-white/50 mb-8 max-w-[640px] leading-relaxed">
+        <p className="text-[#0e1512]/50 mb-8 max-w-[640px] leading-relaxed">
           Load a public CS2 inventory and see which of your skins trade on CSL —
           hedge the value of what you hold by shorting the same market.
         </p>
 
         <div className="flex gap-2 max-w-[560px] mb-2">
-          <div className="flex-1 flex items-center rounded-xl bg-white/5 border border-white/15 px-3 focus-within:border-emerald-500/50">
-            <Search size={15} className="text-white/30 mr-2 shrink-0" />
+          <div className="flex-1 flex items-center rounded-xl bg-black/5 border border-black/15 px-3 focus-within:border-emerald-500/50">
+            <Search size={15} className="text-[#0e1512]/30 mr-2 shrink-0" />
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -64,9 +64,9 @@ export default function Inventory() {
             {loading ? "Loading…" : "Load"}
           </button>
         </div>
-        <p className="text-xs text-white/30 mb-8">Read-only: we never ask for your Steam login. Only public inventories can be read.</p>
+        <p className="text-xs text-[#0e1512]/30 mb-8">Read-only: we never ask for your Steam login. Only public inventories can be read.</p>
 
-        {error && <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.06] p-4 text-sm text-white/60 mb-8 max-w-[640px]">{error}</div>}
+        {error && <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.06] p-4 text-sm text-[#0e1512]/60 mb-8 max-w-[640px]">{error}</div>}
 
         {items && (
           <>
@@ -86,13 +86,13 @@ export default function Inventory() {
             )}
             <h2 className="text-lg font-semibold mb-3">All items ({items.length})</h2>
             {items.length === 0 ? (
-              <div className="text-white/30 text-sm">Inventory is empty (or has no marketable CS2 items).</div>
+              <div className="text-[#0e1512]/30 text-sm">Inventory is empty (or has no marketable CS2 items).</div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 {items.slice(0, 100).map((i, idx) => (
-                  <div key={idx} className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+                  <div key={idx} className="rounded-xl border border-black/10 bg-black/[0.02] p-3">
                     {i.icon && <img src={i.icon} alt="" className="h-16 object-contain mx-auto mb-2" />}
-                    <div className="text-[11px] leading-snug text-white/70">{i.name}</div>
+                    <div className="text-[11px] leading-snug text-[#0e1512]/70">{i.name}</div>
                   </div>
                 ))}
               </div>
