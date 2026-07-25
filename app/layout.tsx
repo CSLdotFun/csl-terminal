@@ -9,9 +9,9 @@ import "./globals.css"
 import Providers from "./providers"
 
 export const metadata: Metadata = {
-  title: "CSL - Trade CS:2 Skins on Solana",
+  title: "CSL - Trade CS:2 Skins on Robinhood Chain",
   description:
-    "The first platform to leverage trade CS:2 skins on Solana. Long or short your favorite skins with up to 100x leverage.",
+    "The first platform to leverage trade CS:2 skins on Robinhood Chain. Long or short your favorite skins with up to 100x leverage.",
   generator: "v0.app",
   icons: {
     icon: "/favicon.ico",

@@ -137,3 +137,79 @@
 .animate-scroll {
   animation: scroll 10s linear infinite;
 }
+
+/* hidden scrollbar utility — keeps scroll, removes the ugly bar */
+.no-scrollbar {
+  -ms-overflow-style: none;   /* IE/Edge */
+  scrollbar-width: none;      /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;              /* Chrome/Safari/Opera */
+  width: 0;
+  height: 0;
+}
+
+/* Hyperliquid-style marquee ticker */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+  padding-left: 2rem;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* --- landing feature-card animations ---------------------------------- */
+
+/* 01: Long/Short alternate — one lights up while the other dims */
+@keyframes sidePulseA {
+  0%, 45%  { opacity: 1; transform: scale(1.06); box-shadow: 0 0 22px rgba(16,185,129,0.35); }
+  55%, 95% { opacity: 0.45; transform: scale(0.97); box-shadow: none; }
+  100%     { opacity: 1; transform: scale(1.06); }
+}
+@keyframes sidePulseB {
+  0%, 45%  { opacity: 0.45; transform: scale(0.97); box-shadow: none; }
+  55%, 95% { opacity: 1; transform: scale(1.06); box-shadow: 0 0 22px rgba(239,68,68,0.35); }
+  100%     { opacity: 0.45; transform: scale(0.97); }
+}
+.anim-side-long  { animation: sidePulseA 3.2s ease-in-out infinite; }
+.anim-side-short { animation: sidePulseB 3.2s ease-in-out infinite; }
+
+/* 02: leverage slider sweeps 1x -> 20x and label counts with it */
+@keyframes levFill {
+  0%   { width: 5%; }
+  70%  { width: 100%; }
+  85%  { width: 100%; }
+  100% { width: 5%; }
+}
+.anim-lev-fill { animation: levFill 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+@keyframes levLabel {
+  0%   { opacity: 0.5; transform: scale(0.92); }
+  70%  { opacity: 1; transform: scale(1.08); text-shadow: 0 0 18px rgba(96,165,250,0.6); }
+  85%  { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 0.5; transform: scale(0.92); }
+}
+.anim-lev-label { animation: levLabel 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+
+/* 03: settlement chip pops in, checkmark pings */
+@keyframes settlePop {
+  0%, 10%  { opacity: 0; transform: translateY(10px) scale(0.94); }
+  22%, 88% { opacity: 1; transform: translateY(0) scale(1); }
+  100%     { opacity: 0; transform: translateY(-6px) scale(0.98); }
+}
+.anim-settle { animation: settlePop 4s ease-in-out infinite; }
+@keyframes settleCheck {
+  0%, 20%  { transform: scale(0); }
+  30%      { transform: scale(1.25); }
+  38%, 100% { transform: scale(1); }
+}
+.anim-settle-check { animation: settleCheck 4s ease-in-out infinite; }
+
+
+/* no native spinners on number inputs — the little up/down arrows */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }

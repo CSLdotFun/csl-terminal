@@ -50,7 +50,7 @@ export default function Inventory() {
         </p>
 
         <div className="flex gap-2 max-w-[560px] mb-2">
-          <div className="flex-1 flex items-center rounded-xl bg-white/5 border border-white/15 px-3 focus-within:border-blue-500/50">
+          <div className="flex-1 flex items-center rounded-xl bg-white/5 border border-white/15 px-3 focus-within:border-emerald-500/50">
             <Search size={15} className="text-white/30 mr-2 shrink-0" />
             <input
               value={input}
@@ -60,7 +60,7 @@ export default function Inventory() {
               className="flex-1 bg-transparent py-3 outline-none text-sm min-w-0"
             />
           </div>
-          <button onClick={load} disabled={loading} className="px-6 rounded-xl bg-blue-500 hover:bg-blue-400 disabled:opacity-50 text-black font-bold text-sm transition-colors">
+          <button onClick={load} disabled={loading} className="px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-bold text-sm transition-colors">
             {loading ? "Loading…" : "Load"}
           </button>
         </div>
@@ -75,7 +75,7 @@ export default function Inventory() {
                 <h2 className="text-lg font-semibold mb-3">Tradable on CSL ({hedgeable.length})</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-10">
                   {hedgeable.map((i, idx) => (
-                    <div key={idx} className="rounded-xl border border-blue-500/25 bg-blue-500/[0.05] p-3 flex flex-col">
+                    <div key={idx} className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.05] p-3 flex flex-col">
                       {i.icon && <img src={i.icon} alt="" className="h-20 object-contain mx-auto mb-2" />}
                       <div className="text-xs font-medium leading-snug mb-2">{i.name}</div>
                       <a href="/trade" className="mt-auto text-center text-xs font-bold py-1.5 rounded-lg bg-red-500/90 hover:bg-red-400 text-black transition-colors">Hedge · Short</a>

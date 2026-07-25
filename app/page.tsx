@@ -19,35 +19,13 @@ function GitHubIcon({ size = 16 }: { size?: number }) {
   )
 }
 
-function C4Icon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={`size-8 ${className}`} width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="6" width="16" height="13" rx="2" />
-      <rect x="7.5" y="9" width="9" height="4" rx="1" />
-      <path d="M8.5 16.5h1.6M12.2 16.5h1.6M15.9 16.5h1.1" />
-      <path d="M8 6V4.4M12 6V3.6M16 6V4.4" />
-    </svg>
-  )
-}
-
-function SmokeIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={`size-8 ${className}`} width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="8" y="8.5" width="8" height="12" rx="2.2" />
-      <path d="M9.5 8.5V7a1.6 1.6 0 0 1 1.6-1.6h1.8A1.6 1.6 0 0 1 14.5 7v1.5" />
-      <circle cx="17.6" cy="5.6" r="1.7" />
-      <path d="M15.9 5.9 14.5 6.6" />
-      <path d="M9 3.2c.9-.7 2-.4 2.4.3M12.7 2.4c1.1-.5 2.2.1 2.3 1" />
-    </svg>
-  )
-}
 
 export default function HomePage() {
   const skinImages = [
     "/karambit-fade-pink.png",
     "/awp-dragon-lore-flame.png",
     "/butterfly-knife-blue.png",
-    "/awp-blue-gold.png",
+    "/awp-emerald-gold.png",
     "/karambit-red-white.png",
     "/bayonet-green.png",
     "/agent-business-suit.png",
@@ -56,11 +34,11 @@ export default function HomePage() {
     "/awp-light-colored.png",
     "/butterfly-knife-red.png",
     "/ak47-leopard-print.png",
-    "/butterfly-knife-blue-dark.png",
+    "/butterfly-knife-emerald-dark.png",
     "/sport-gloves-purple.png",
     "/agent-fbi-tactical.png",
     "/m4a4-flame-red.png",
-    "/bayonet-blue-geometric.png",
+    "/bayonet-emerald-geometric.png",
   ]
 
   return (
@@ -105,7 +83,7 @@ export default function HomePage() {
                 href="https://docs.csl.fun/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-white/90 hover:text-blue-400 transition-colors"
+                className="flex items-center gap-2 text-white/90 hover:text-emerald-400 transition-colors"
               >
                 <FileText size={16} />
                 <span className="font-medium">Docs</span>
@@ -114,16 +92,15 @@ export default function HomePage() {
                 href="https://x.com/csldotfun"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-white/90 hover:text-blue-400 transition-colors"
+                className="flex items-center gap-2 text-white/90 hover:text-emerald-400 transition-colors"
               >
                 <XIcon />
-                <span className="font-medium">X</span>
               </a>
               <a
                 href="https://github.com/CSLdotFun"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-white/90 hover:text-blue-400 transition-colors"
+                className="flex items-center gap-2 text-white/90 hover:text-emerald-400 transition-colors"
               >
                 <GitHubIcon />
                 <span className="font-medium">GitHub</span>
@@ -144,31 +121,34 @@ export default function HomePage() {
             <h1 className="mx-auto text-[42px] sm:text-6xl lg:text-[72px] font-bold leading-[1.06] tracking-[-0.035em] max-w-[1080px] text-white [text-shadow:0_2px_30px_rgba(0,0,0,0.9),0_1px_6px_rgba(0,0,0,0.8)]">
               <span className="whitespace-nowrap max-lg:whitespace-normal">The first perpetual exchange</span>
               <br />
-              <span className="whitespace-nowrap max-sm:whitespace-normal">for CS:2 skins. <span className="text-blue-400">On Solana.</span></span>
+              <span className="whitespace-nowrap max-sm:whitespace-normal">for CS:2 skins. <span className="text-emerald-400">On Robinhood Chain.</span></span>
             </h1>
 
             <p className="mx-auto mt-7 text-white/90 max-w-[620px] text-lg sm:text-xl leading-relaxed text-center [text-shadow:0_1px_14px_rgba(0,0,0,0.9)]">
               Long Dragon Lore. Short Howl. Up to 20x leverage on the most iconic items
-              in Counter-Strike — no inventory, no trade locks. Settled in USDC.
+              in Counter-Strike — no inventory, no trade locks. Settled in USDG.
             </p>
             </div>
           </div>
 
           {/* Bottom buttons */}
-          <div className="relative z-10 flex items-center justify-center gap-4 pb-24 px-5">
+          <div className="relative z-10 flex items-center justify-center gap-3.5 pb-24 px-5">
+            {/* Primary: solid white, quiet ring */}
             <a href="/trade">
-              <Button className="group h-16 px-10 text-lg bg-white text-black hover:bg-white/90 font-bold rounded-2xl shadow-[0_10px_40px_rgba(255,255,255,0.18)] transition-transform hover:-translate-y-0.5">
-                <C4Icon className="mr-2.5" />
-                Start
-                <ArrowRight className="size-5 ml-2 transition-transform group-hover:translate-x-0.5" />
+              <Button className="group h-[58px] rounded-full bg-white px-11 text-[17px] font-semibold tracking-[-0.01em] text-[#0a0f18] shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_12px_36px_-10px_rgba(255,255,255,0.35)] ring-1 ring-white/70 transition-all duration-300 hover:bg-white hover:shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_18px_50px_-12px_rgba(255,255,255,0.5)] hover:-translate-y-[1px]">
+                <span className="flex items-center">
+                  Start trading
+                  <ArrowRight className="ml-2 size-[18px] transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
               </Button>
             </a>
+
+            {/* Secondary: glass, hairline border, no fill until hover */}
             <a href="https://docs.csl.fun/" target="_blank" rel="noopener noreferrer">
               <Button
                 variant="outline"
-                className="h-16 px-10 text-lg border-white/20 bg-white/[0.06] hover:bg-white/[0.12] hover:border-white/35 text-white font-bold rounded-2xl backdrop-blur-md transition-transform hover:-translate-y-0.5"
+                className="h-[58px] rounded-full border border-white/15 bg-white/[0.04] px-9 text-[17px] font-medium tracking-[-0.01em] text-white/90 backdrop-blur-xl transition-all duration-300 hover:-translate-y-[1px] hover:border-white/30 hover:bg-white/[0.08] hover:text-white"
               >
-                <SmokeIcon className="mr-2.5" />
                 Docs
               </Button>
             </a>
@@ -203,19 +183,40 @@ export default function HomePage() {
         </div>
         <div className="grid md:grid-cols-3 gap-5">
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-            <div className="text-blue-400 font-mono text-sm mb-2">01</div>
+            <div className="h-28 mb-4 flex items-center justify-center">
+              {/* animated: pick a side — Long/Short toggle pulsing */}
+              <div className="flex gap-3 items-center">
+                <div className="anim-side-long px-5 py-2.5 rounded-lg font-bold text-sm bg-emerald-500/15 border border-emerald-500/40 text-emerald-400">LONG ↑</div>
+                <div className="anim-side-short px-5 py-2.5 rounded-lg font-bold text-sm bg-red-500/15 border border-red-500/40 text-red-400">SHORT ↓</div>
+              </div>
+            </div>
+            <div className="text-emerald-400 font-mono text-sm mb-2">01</div>
             <h3 className="font-semibold text-lg mb-2">Pick a skin, pick a side</h3>
             <p className="text-white/55 text-sm leading-relaxed">17 curated markets — Dragon Lore, Howl, Karambit Fade and more. Go long if you think the price rises, short if it falls.</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-            <div className="text-blue-400 font-mono text-sm mb-2">02</div>
+            <div className="h-28 mb-4 flex flex-col items-center justify-center gap-3">
+              {/* animated: leverage slider sweeping 1x -> 20x */}
+              <div className="anim-lev-label font-mono font-bold text-2xl text-emerald-400">20x</div>
+              <div className="relative w-44 h-2 rounded-full bg-white/10 overflow-hidden">
+                <div className="anim-lev-fill absolute left-0 top-0 bottom-0 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500" />
+              </div>
+            </div>
+            <div className="text-emerald-400 font-mono text-sm mb-2">02</div>
             <h3 className="font-semibold text-lg mb-2">Add leverage</h3>
             <p className="text-white/55 text-sm leading-relaxed">Size positions from 1x to 20x with isolated margin. Entry, fees and exact liquidation price are shown before you open.</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-            <div className="text-blue-400 font-mono text-sm mb-2">03</div>
-            <h3 className="font-semibold text-lg mb-2">Settle in USDC</h3>
-            <p className="text-white/55 text-sm leading-relaxed">PnL is settled in USDC on Solana. No Steam inventory, no trade locks, no waiting for a buyer — pure price exposure.</p>
+            <div className="h-28 mb-4 flex items-center justify-center">
+              {/* animated: USDG settlement pulse */}
+              <div className="anim-settle flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                <span className="anim-settle-check w-6 h-6 rounded-full bg-emerald-500 text-black font-bold text-sm flex items-center justify-center">✓</span>
+                <span className="font-mono font-bold text-emerald-300">+$412.50 <span className="text-white/50 font-medium text-xs">USDG</span></span>
+              </div>
+            </div>
+            <div className="text-emerald-400 font-mono text-sm mb-2">03</div>
+            <h3 className="font-semibold text-lg mb-2">Settle in USDG</h3>
+            <p className="text-white/55 text-sm leading-relaxed">PnL is settled in USDG on Robinhood Chain. No Steam inventory, no trade locks, no waiting for a buyer — pure price exposure.</p>
           </div>
         </div>
       </section>
@@ -223,10 +224,10 @@ export default function HomePage() {
       {/* Token — Soon */}
       <section className="max-w-[1100px] mx-auto px-5 py-16">
         <div className="flex flex-col items-center text-center gap-3">
-          <span className="text-[11px] font-semibold tracking-[0.28em] uppercase text-blue-400/90 border border-blue-400/30 rounded-full px-4 py-1.5">Token launch — Soon</span>
+          <span className="text-[11px] font-semibold tracking-[0.28em] uppercase text-emerald-400/90 border border-emerald-400/30 rounded-full px-4 py-1.5">Token launch — Soon</span>
           <p className="text-white/50 max-w-[440px] text-sm leading-relaxed">
             $CSL launches alongside the public release. The contract address will be announced
-            here and on <a href="https://x.com/csldotfun" target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-blue-400 underline underline-offset-2">@csldotfun</a> — trust no other source.
+            here and on <a href="https://x.com/csldotfun" target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-emerald-400 underline underline-offset-2">@csldotfun</a> — trust no other source.
           </p>
         </div>
       </section>
@@ -248,9 +249,9 @@ export default function HomePage() {
             <p className="text-white font-medium">With CSL, we built a perp exchange for skins:</p>
             <ul className="space-y-2 text-white/70 ml-6">
               <li className="list-disc">Long/short your favorite skins</li>
-              <li className="list-disc">Trade with leverage (up to 100x)</li>
-              <li className="list-disc">All collateral + settlement on Solana</li>
-              <li className="list-disc">PnL settled in $USDC (no skins need to move)</li>
+              <li className="list-disc">Trade with leverage (up to 20x)</li>
+              <li className="list-disc">All collateral + settlement on Robinhood Chain</li>
+              <li className="list-disc">PnL settled in $USDG (no skins need to move)</li>
             </ul>
             <p className="text-white font-medium">
               We're building a massive bridge between gaming and defi and are very excited to launch our token alongside
@@ -267,38 +268,44 @@ export default function HomePage() {
       <section className="max-w-[1200px] mx-auto px-5 py-16">
         <h2 className="text-4xl font-bold text-center mb-16">Experience a new way to trade skins</h2>
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-b from-orange-500 to-yellow-500 rounded-xl p-6 text-center space-y-4 relative overflow-hidden">
-            <div className="absolute inset-0 opacity-10">
-              <div className="w-32 h-32 bg-white/20 rounded-full absolute top-12 right-8" />
+          <div className="bg-gradient-to-b from-[#0d3b28] to-[#04140d] rounded-xl p-6 relative overflow-hidden border border-emerald-400/20 flex flex-col items-center text-center">
+            <div className="absolute inset-0 opacity-20">
+              <div className="w-32 h-32 bg-emerald-400/20 rounded-full blur-2xl absolute top-12 right-8" />
             </div>
-            <div className="relative z-10">
-              <img src="/solana-logo.png" alt="Solana" className="w-24 h-24 mx-auto mb-4 object-contain" />
-              <h3 className="text-xl font-bold text-white drop-shadow-sm">POWERED BY SOLANA</h3>
-              <p className="text-white/90 text-sm drop-shadow-sm">
-                Long or short CS skins powered by Solana, a low fee and incredibly fast blockchain solution.
+            <div className="relative z-10 flex flex-col items-center h-full">
+              <div className="h-28 flex items-center justify-center">
+                <img src="/robinhood-feather-green.png" alt="Robinhood Chain" className="h-24 w-24 object-contain drop-shadow-[0_0_20px_rgba(205,246,10,0.35)]" />
+              </div>
+              <h3 className="text-lg font-bold text-white drop-shadow-sm h-14 flex items-center justify-center">POWERED BY ROBINHOOD CHAIN</h3>
+              <p className="text-white/80 text-sm drop-shadow-sm mt-2">
+                Long or short CS skins on Robinhood Chain — an Ethereum L2 with low fees and fast settlement, gas in ETH.
               </p>
             </div>
           </div>
-          <div className="bg-gradient-to-b from-pink-500 to-purple-600 rounded-xl p-6 text-center space-y-4 relative overflow-hidden">
+          <div className="bg-gradient-to-b from-pink-500 to-purple-600 rounded-xl p-6 relative overflow-hidden flex flex-col items-center text-center">
             <div className="absolute inset-0 opacity-10">
               <div className="w-40 h-40 bg-white/20 rounded-full absolute top-8 right-4" />
             </div>
-            <div className="relative z-10">
-              <img src="/easy-profits-weapons.png" alt="Easy Profits" className="w-32 h-24 mx-auto mb-4 object-contain" />
-              <h3 className="text-xl font-bold text-white drop-shadow-sm">EASY PROFITS</h3>
-              <p className="text-white/90 text-sm drop-shadow-sm">
+            <div className="relative z-10 flex flex-col items-center h-full">
+              <div className="h-28 flex items-center justify-center">
+                <img src="/easy-profits-weapons.png" alt="Easy Profits" className="h-24 w-auto object-contain" />
+              </div>
+              <h3 className="text-lg font-bold text-white drop-shadow-sm h-14 flex items-center justify-center">EASY PROFITS</h3>
+              <p className="text-white/90 text-sm drop-shadow-sm mt-2">
                 Hedge your CS skin exposure or profit from insights on the market.
               </p>
             </div>
           </div>
-          <div className="bg-gradient-to-b from-blue-500 to-cyan-400 rounded-xl p-6 text-center space-y-4 relative overflow-hidden">
+          <div className="bg-gradient-to-b from-emerald-500 to-cyan-400 rounded-xl p-6 relative overflow-hidden flex flex-col items-center text-center">
             <div className="absolute inset-0 opacity-10">
               <div className="w-36 h-48 bg-white/20 rounded-full absolute top-4 right-2" />
             </div>
-            <div className="relative z-10">
-              <img src="/new-csl-logo.png" alt="CSL Token" className="w-16 h-16 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white drop-shadow-sm">THE TOKEN</h3>
-              <p className="text-white/90 text-sm drop-shadow-sm">
+            <div className="relative z-10 flex flex-col items-center h-full">
+              <div className="h-28 flex items-center justify-center">
+                <img src="/new-csl-logo.png" alt="CSL Token" className="h-20 w-20 object-contain" />
+              </div>
+              <h3 className="text-lg font-bold text-white drop-shadow-sm h-14 flex items-center justify-center">THE TOKEN</h3>
+              <p className="text-white/90 text-sm drop-shadow-sm mt-2">
                 Stake $CSL in the future to benefit from trading volume and receive fee discounts.
               </p>
             </div>
@@ -315,7 +322,7 @@ export default function HomePage() {
               href="https://docs.csl.fun/"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors"
+              className="flex items-center gap-2 text-white hover:text-emerald-400 transition-colors"
             >
               <FileText size={16} />
               <span className="font-medium">Docs</span>
@@ -324,16 +331,15 @@ export default function HomePage() {
               href="https://x.com/csldotfun"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors"
+              className="flex items-center gap-2 text-white hover:text-emerald-400 transition-colors"
             >
               <XIcon />
-              <span className="font-medium">X</span>
             </a>
             <a
               href="https://github.com/CSLdotFun"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors"
+              className="flex items-center gap-2 text-white hover:text-emerald-400 transition-colors"
             >
               <GitHubIcon />
               <span className="font-medium">GitHub</span>

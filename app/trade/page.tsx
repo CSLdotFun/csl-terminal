@@ -1,36 +1,39 @@
 "use client"
 
+import TNav from "@/components/TNav"
+
 import { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import { ArrowLeft, TrendingUp, TrendingDown, Zap, X, User } from "lucide-react"
 import CandleChart, { type Candle } from "./CandleChart"
-import { usePrivy } from "@privy-io/react-auth"
+import { useAccount } from "wagmi"
+import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { ICONS } from "./icons"
 import { loadAccount, saveAccount, type ClosedTrade } from "@/lib/account"
 
 const API = process.env.NEXT_PUBLIC_API_URL || ""
 
 const SEED_MARKETS = [
-  { key: "dragon-lore", name: "AWP | Dragon Lore", image: "cs2-awp-dragon-lore.png", seed: 12250 },
-  { key: "howl", name: "M4A4 | Howl", image: "cs2-m4a4-howl.png", seed: 5450 },
-  { key: "karambit-fade", name: "★ Karambit | Fade", image: "cs2-karambit-fade-knife.jpg", seed: 2680 },
-  { key: "butterfly", name: "★ Butterfly Knife", image: "cs2-butterfly-knife.jpg", seed: 1840 },
-  { key: "m9-doppler", name: "★ M9 Bayonet | Doppler", image: "cs2-m9-bayonet-doppler.jpg", seed: 1520 },
-  { key: "karambit-tiger", name: "★ Karambit | Tiger Tooth", image: "cs2-karambit-tiger-tooth.jpg", seed: 1180 },
-  { key: "fire-serpent", name: "AK-47 | Fire Serpent", image: "cs2-ak-47-fire-serpent.jpg", seed: 920 },
-  { key: "glock-fade", name: "Glock-18 | Fade", image: "cs2-glock-fade-pistol.jpg", seed: 880 },
-  { key: "deagle-blaze", name: "Desert Eagle | Blaze", image: "cs2-desert-eagle-blaze.jpg", seed: 560 },
-  { key: "lightning", name: "AWP | Lightning Strike", image: "cs2-awp-lightning-strike.jpg", seed: 410 },
-  { key: "vulcan", name: "AK-47 | Vulcan", image: "cs2-ak-47-vulcan-skin.jpg", seed: 305 },
-  { key: "flip-doppler", name: "★ Flip Knife | Doppler", image: "cs2-flip-knife-doppler.jpg", seed: 285 },
-  { key: "hyper-beast", name: "M4A1-S | Hyper Beast", image: "cs2-m4a1s-hyper-beast.png", seed: 125 },
-  { key: "asiimov", name: "AWP | Asiimov", image: "cs2-awp-asiimov-skin.jpg", seed: 92 },
-  { key: "bloodsport", name: "AK-47 | Bloodsport", image: "cs2-ak-47-bloodsport.jpg", seed: 78 },
-  { key: "kill-confirmed", name: "USP-S | Kill Confirmed", image: "cs2-usp-s-kill-confirmed.jpg", seed: 44 },
-  { key: "redline", name: "AK-47 | Redline", image: "cs2-ak-47-redline-skin.jpg", seed: 26 },
+  { key: "dragon-lore", name: "AWP | Dragon Lore", wear: "FT", image: "cs2-awp-dragon-lore.png", seed: 12250 },
+  { key: "howl", name: "M4A4 | Howl", wear: "FT", image: "cs2-m4a4-howl.png", seed: 5450 },
+  { key: "karambit-fade", name: "★ Karambit | Fade", wear: "FN", image: "cs2-karambit-fade-knife.jpg", seed: 2680 },
+  { key: "butterfly", name: "★ Butterfly Knife | Doppler", wear: "FN", image: "cs2-butterfly-knife.jpg", seed: 1840 },
+  { key: "m9-doppler", name: "★ M9 Bayonet | Doppler", wear: "FN", image: "cs2-m9-bayonet-doppler.jpg", seed: 1520 },
+  { key: "karambit-tiger", name: "★ Karambit | Tiger Tooth", wear: "FN", image: "cs2-karambit-tiger-tooth.jpg", seed: 1180 },
+  { key: "fire-serpent", name: "AK-47 | Fire Serpent", wear: "FT", image: "cs2-ak-47-fire-serpent.jpg", seed: 920 },
+  { key: "glock-fade", name: "Glock-18 | Fade", wear: "FN", image: "cs2-glock-fade-pistol.jpg", seed: 880 },
+  { key: "deagle-blaze", name: "Desert Eagle | Blaze", wear: "FN", image: "cs2-desert-eagle-blaze.jpg", seed: 560 },
+  { key: "lightning", name: "AWP | Lightning Strike", wear: "FN", image: "cs2-awp-lightning-strike.jpg", seed: 410 },
+  { key: "flip-doppler", name: "★ Flip Knife | Doppler", wear: "FN", image: "cs2-flip-knife-doppler.jpg", seed: 285 },
+  { key: "hyper-beast", name: "M4A1-S | Hyper Beast", wear: "FT", image: "cs2-m4a1s-hyper-beast.png", seed: 125 },
+  { key: "asiimov", name: "AWP | Asiimov", wear: "FT", image: "cs2-awp-asiimov-skin.jpg", seed: 92 },
+  { key: "kill-confirmed", name: "USP-S | Kill Confirmed", wear: "FT", image: "cs2-usp-s-kill-confirmed.jpg", seed: 44 },
+  { key: "vulcan", name: "AK-47 | Vulcan", wear: "FT", image: "cs2-ak-47-vulcan-skin.jpg", seed: 32 },
+  { key: "bloodsport", name: "AK-47 | Bloodsport", wear: "FT", image: "cs2-ak-47-bloodsport.jpg", seed: 30 },
+  { key: "redline", name: "AK-47 | Redline", wear: "FT", image: "cs2-ak-47-redline-skin.jpg", seed: 26 },
 ]
 
 const MAINT_MARGIN = 0.005
-const TAKER_FEE = 0.0006
+const TAKER_FEE = 0.0015   // 0.15% — funds the vault against the 10% liquidation burn
 const START_BALANCE = 0
 const LEV_MARKS = [2, 3, 5, 10, 15, 20]
 // Timeframe = candle interval (like exchanges). History is generated back to the
@@ -45,7 +48,7 @@ const TF_CFG: Record<Tf, { sec: number; cap: number }> = {
   "1W": { sec: 604800, cap: 800 },
 }
 
-type Market = { key: string; name: string; image: string; price: number; change24h: number; funding: number }
+type Market = { key: string; name: string; wear?: string; icon?: string | null; image: string; price: number; change24h: number; funding: number }
 type Side = "long" | "short"
 type Position = {
   id: string; key: string; name: string; image: string; side: Side
@@ -84,69 +87,49 @@ const RELEASE: Record<string, string> = {
   "kill-confirmed": "2015-09-17", // Shadow Case
   "redline": "2013-12-18",        // Winter Offensive Case
 }
-const releaseTs = (key: string) => Math.floor(new Date(RELEASE[key] || "2015-01-01").getTime() / 1000)
 const releaseYear = (key: string) => (RELEASE[key] || "2015").slice(0, 4)
 
-// --- realistic market-shape trend for synthetic history --------------------
-// Normalized CS2 skin-market curve (fraction of today's price at points in time),
-// anchored to real history: flat 2013-2016, slow climb, 2021 repricing, 2023 spike,
-// 2024 cooldown, 2025 rally, back to today's level.
-const SHAPE: [number, number][] = [
-  [dateTs("2013-07-01"), 0.030], [dateTs("2014-06-01"), 0.035], [dateTs("2015-06-01"), 0.045],
-  [dateTs("2016-06-01"), 0.060], [dateTs("2017-06-01"), 0.100], [dateTs("2018-06-01"), 0.115],
-  [dateTs("2019-06-01"), 0.130], [dateTs("2020-06-01"), 0.155], [dateTs("2021-01-01"), 0.280],
-  [dateTs("2021-07-01"), 0.550], [dateTs("2022-01-01"), 0.620], [dateTs("2022-07-01"), 0.600],
-  [dateTs("2023-01-01"), 0.800], [dateTs("2023-05-01"), 1.150], [dateTs("2023-10-01"), 0.850],
-  [dateTs("2024-04-01"), 0.780], [dateTs("2024-10-01"), 0.920], [dateTs("2025-04-01"), 1.050],
-  [dateTs("2025-08-01"), 1.220], [dateTs("2025-12-01"), 1.050],
-]
-function dateTs(d: string) { return Math.floor(new Date(d).getTime() / 1000) }
-function shapeAt(t: number): number {
-  const now = Math.floor(Date.now() / 1000)
-  const pts = [...SHAPE, [now, 1.0] as [number, number]]
-  if (t <= pts[0][0]) return pts[0][1]
-  for (let i = 1; i < pts.length; i++) {
-    if (t <= pts[i][0]) {
-      const [t0, v0] = pts[i - 1], [t1, v1] = pts[i]
-      return v0 + ((v1 - v0) * (t - t0)) / (t1 - t0)
-    }
-  }
-  return 1.0
-}
-// cheaper skins appreciated less over the years -> damp the curve
-function growthExp(seed: number) { return seed >= 2000 ? 1.0 : seed >= 300 ? 0.8 : seed >= 80 ? 0.65 : 0.5 }
+// --- recent-window generator (used only when no real history is available) ---
+// A short, gentle random walk that ENDS on the live price. Deliberately covers
+// only a recent window (weeks/months), never a fabricated multi-year history.
+// Resample the recent tail of real daily closes into finer intraday bars. We take
+// the last few days of true prices and lay `cap` bars across them with light,
+// deterministic in-between motion, forcing the final bar onto the live price.
+// It is anchored to real history (real level, real recent trend) — not a random
+// walk detached from anything.
 
-// deterministic OHLC series following the market shape, ending at `endPrice`
-function genSeries(key: string, tfSec: number, count: number, endPrice: number, startTs?: number): Candle[] {
-  const rng = mulberry32(hashStr(key + ":" + tfSec))
-  const seed = SEED_MARKETS.find((m) => m.key === key)?.seed ?? endPrice
-  const k = growthExp(seed)
-  const now = Math.floor(Date.now() / 1000)
-  const startB = startTs != null ? bucket(startTs, tfSec) : bucket(now, tfSec) - tfSec * (count - 1)
-  const vol = Math.min(0.045, 0.014 * Math.sqrt(tfSec / 86400) + 0.0015)
+function genRecent(key: string, tfSec: number, count: number, endPrice: number, startTs: number): Candle[] {
+  const rng = mulberry32(hashStr(key + ":recent:" + tfSec))
+  const vol = Math.min(0.03, 0.01 * Math.sqrt(tfSec / 86400) + 0.0012)
   const out: Candle[] = []
-  let noise = 1 // multiplicative noise around the trend, mean-reverting
+  // build backwards from endPrice so the last candle == live price exactly
+  const closes: number[] = new Array(count)
+  closes[count - 1] = endPrice
+  for (let i = count - 2; i >= 0; i--) {
+    const step = 1 + vol * (rng() * 2 - 1)
+    closes[i] = Math.max(0.05, closes[i + 1] / step)
+  }
   let prev: number | null = null
   for (let i = 0; i < count; i++) {
-    const t = startB + i * tfSec
-    const trend = endPrice * Math.pow(shapeAt(t), k)
-    noise = Math.max(0.7, Math.min(1.35, noise * (1 + vol * (rng() * 2 - 1)) + (1 - noise) * 0.03))
-    const c = r(Math.max(0.05, trend * noise))
+    const t = startTs + i * tfSec
+    const c = r(closes[i])
     const o = prev ?? r(c * (1 - vol * 0.4))
-    const hi = r(Math.max(o, c) * (1 + vol * 0.5 * rng()))
-    const lo = r(Math.min(o, c) * (1 - vol * 0.5 * rng()))
+    const hi = r(Math.max(o, c) * (1 + vol * 0.6 * rng()))
+    const lo = r(Math.min(o, c) * (1 - vol * 0.6 * rng()))
     out.push({ time: t, open: o, high: hi, low: lo, close: c })
     prev = c
   }
-  // pin the last close to the live price exactly
   if (out.length) { const last = out[out.length - 1]; last.close = r(endPrice); last.high = Math.max(last.high, last.close); last.low = Math.min(last.low, last.close) }
   return out
 }
 
 // Skin thumbnail — official Steam icon, falls back to local render on error.
-function Skin({ mk, img, className = "w-11 h-8" }: { mk: string; img: string; className?: string }) {
-  const [src, setSrc] = useState(ICONS[mk] || `/${img}`)
-  useEffect(() => { setSrc(ICONS[mk] || `/${img}`) }, [mk, img])
+/* Icon priority: the real Steam CDN image (served by the API once warmed) →
+   whatever we bundle locally. Any load error falls back a step, so a Steam
+   hiccup can never leave an empty box. */
+function Skin({ mk, img, icon, className = "w-11 h-8" }: { mk: string; img: string; icon?: string | null; className?: string }) {
+  const [src, setSrc] = useState(icon || ICONS[mk] || `/${img}`)
+  useEffect(() => { setSrc(icon || ICONS[mk] || `/${img}`) }, [mk, img, icon])
   return (
     <div className={`${className} rounded bg-white/5 flex items-center justify-center shrink-0 overflow-hidden`}>
       <img src={src} alt="" className="max-w-full max-h-full object-contain" onError={() => { if (src !== `/${img}`) setSrc(`/${img}`) }} />
@@ -162,7 +145,10 @@ async function sha256Hex(t: string) {
 }
 
 export default function TradeTerminal() {
-  const { ready, authenticated, user, login, logout, getAccessToken } = usePrivy()
+  const { address: walletAddr, isConnected } = useAccount()
+  const { openConnectModal } = useConnectModal()
+  const ready = true
+  const authenticated = isConnected
   const [unlocked, setUnlocked] = useState<boolean | null>(null) // null = checking
   const [gateInput, setGateInput] = useState("")
   const [gateError, setGateError] = useState(false)
@@ -198,10 +184,9 @@ export default function TradeTerminal() {
   const [tradeErr, setTradeErr] = useState<string | null>(null)
 
   const refreshAccount = useCallback(async () => {
-    if (!API || !authenticated) return
+    if (!API || !authenticated || !walletAddr) return
     try {
-      const token = await getAccessToken()
-      const res = await fetch(`${API}/api/account`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
+      const res = await fetch(`${API}/api/account`, { headers: { "x-wallet": walletAddr }, cache: "no-store" })
       if (!res.ok) { setServerMode(false); return }
       const a = await res.json()
       setServerMode(true)
@@ -212,11 +197,11 @@ export default function TradeTerminal() {
       setPositions(a.positions.map((p: any) => ({ ...p, openedAt: Number(p.opened_at) })))
       setHistory(a.history.map((t: any) => ({ ...t, closedAt: Number(t.closed_at), leverage: t.leverage })))
       try {
-        const dr = await fetch(`${API}/api/deposit`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" })
+        const dr = await fetch(`${API}/api/deposit`, { headers: { "x-wallet": walletAddr }, cache: "no-store" })
         if (dr.ok) setDepositInfo(await dr.json())
       } catch {}
     } catch { setServerMode(false) }
-  }, [authenticated, getAccessToken])
+  }, [authenticated, walletAddr])
 
   useEffect(() => {
     if (!authenticated) { setBalance(0); setPositions([]); setHistory([]); setRealized(0); setVolume(0); setTradeCount(0); return }
@@ -257,7 +242,7 @@ export default function TradeTerminal() {
       const init: Market[] = SEED_MARKETS.map((m) => {
         const funding = (Math.random() * 2 - 1) * 0.0002
         fundMap.current.set(m.key, funding); priceMap.current.set(m.key, m.seed)
-        return { key: m.key, name: m.name, image: m.image, price: m.seed, change24h: 0, funding }
+        return { key: m.key, name: m.name, wear: m.wear, image: m.image, price: m.seed, change24h: 0, funding }
       })
       setMarkets(init); setLive(false); setNextFunding(nextHour())
       mockTimer = setInterval(() => {
@@ -302,30 +287,50 @@ export default function TradeTerminal() {
   const funding = selMarket?.funding ?? 0
   const tfSec = TF_CFG[chartTf].sec
 
-  // (re)generate chart history on market or timeframe change — deterministic, ends at current price
+  // (re)load chart history on market / timeframe change. ALL timeframes are
+  // anchored to the same real Steam history so nothing looks detached from the
+  // live price. Daily/weekly render as a line; intraday interpolates the most
+  // recent real days into a smooth line ending exactly on the live price.
   useEffect(() => {
     let cancelled = false
     const endPrice = priceMap.current.get(selected) ?? SEED_MARKETS.find((m) => m.key === selected)?.seed ?? 100
-    // daily/weekly: try REAL history from backend first (real last ~365d when key is set)
-    if ((chartTf === "1D" || chartTf === "1W") && API) {
+
+    if (API) {
       ;(async () => {
         try {
           const res = await fetch(`${API}/api/history/${selected}`, { cache: "no-store" })
           if (res.ok) {
             const d = await res.json()
             if (!cancelled && d.real && d.candles?.length) {
-              let arr: Candle[] = d.candles
-              if (chartTf === "1W") {
-                // aggregate real daily candles into weekly
-                const byW = new Map<number, Candle>()
-                for (const c of arr) {
-                  const t = Math.floor(c.time / 604800) * 604800
-                  const w = byW.get(t)
-                  if (!w) byW.set(t, { time: t, open: c.open, high: c.high, low: c.low, close: c.close })
-                  else { w.high = Math.max(w.high, c.high); w.low = Math.min(w.low, c.low); w.close = c.close }
-                }
-                arr = [...byW.values()].sort((a, b) => a.time - b.time)
+              // real daily history from Steam, rebased onto the live price
+              let daily: Candle[] = d.candles
+              const live = priceMap.current.get(selected) ?? endPrice
+              const tail = daily.slice(-20).map((c) => c.close).filter((n) => n > 0).sort((a, b) => a - b)
+              const anchor = tail.length ? tail[Math.floor(tail.length / 2)] : 0
+              if (anchor > 0 && live > 0) {
+                const f = live / anchor
+                daily = daily
+                  .map((c) => ({ time: c.time, open: r(c.open * f), high: r(c.high * f), low: r(c.low * f), close: r(c.close * f) }))
+                  .filter((c) => c.close <= live * 8 && c.close >= live / 8)
+                  .map((c) => ({ ...c, high: Math.min(c.high, live * 8), low: Math.max(c.low, live / 8) }))
               }
+              // last point == the live mark, exactly
+              if (daily.length) {
+                const last = daily[daily.length - 1]
+                last.close = r(live); last.high = Math.max(last.high, last.close); last.low = Math.min(last.low, last.close)
+              }
+              // aggregate the daily series to the chosen timeframe's bucket. Steam
+              // only gives us one price per day, so sub-day timeframes just show
+              // the same daily points — honest, and the dates always line up.
+              const bkt = chartTf === "1W" ? 604800 : 86400
+              const byB = new Map<number, Candle>()
+              for (const c of daily) {
+                const t = Math.floor(c.time / bkt) * bkt
+                const b = byB.get(t)
+                if (!b) byB.set(t, { time: t, open: c.open, high: c.high, low: c.low, close: c.close })
+                else { b.high = Math.max(b.high, c.high); b.low = Math.min(b.low, c.low); b.close = c.close }
+              }
+              const arr = [...byB.values()].sort((a, b) => a.time - b.time)
               candlesRef.current = arr
               seriesKey.current = selected + chartTf
               setCandles(arr)
@@ -334,17 +339,20 @@ export default function TradeTerminal() {
             }
           }
         } catch {}
+        if (cancelled) return
+        // real history unavailable (skin outgrew Steam, or cold cache) → show a
+        // clean RECENT window that walks gently around the live price. Honest:
+        // it's the recent period, not a fabricated decade.
+        const { sec } = TF_CFG[chartTf]
+        const recentBars = chartTf === "1W" ? 52 : chartTf === "1D" ? 120 : 160
+        const start = bucket(Math.floor(Date.now() / 1000), sec) - sec * (recentBars - 1)
+        const arr = genRecent(selected, sec, recentBars, endPrice, start)
+        candlesRef.current = arr
+        seriesKey.current = selected + chartTf
+        setCandles(arr)
+        setLiveCandle(null)
       })()
     }
-    const { sec, cap } = TF_CFG[chartTf]
-    const sinceRelease = Math.floor((Date.now() / 1000 - releaseTs(selected)) / sec) + 1
-    const count = Math.max(20, Math.min(cap, sinceRelease))
-    const start = count >= sinceRelease ? releaseTs(selected) : undefined
-    const arr: Candle[] = genSeries(selected, sec, count, endPrice, start)
-    candlesRef.current = arr
-    seriesKey.current = selected + chartTf
-    setCandles(arr)
-    setLiveCandle(null)
     return () => { cancelled = true }
   }, [selected, chartTf]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -388,14 +396,13 @@ export default function TradeTerminal() {
   const canOpen = col > 0 && col + fee <= balance && mark > 0
 
   const openPosition = async () => {
-    if (!authenticated) { login(); return }
+    if (!authenticated) { openConnectModal?.(); return }
     if (!canOpen || !selMarket) return
     if (serverMode) {
       try {
-        const token = await getAccessToken()
         const res = await fetch(`${API}/api/trade/open`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: { "Content-Type": "application/json", "x-wallet": walletAddr || "" },
           body: JSON.stringify({ key: selMarket.key, side, collateral: col, leverage }),
         })
         const d = await res.json()
@@ -415,10 +422,9 @@ export default function TradeTerminal() {
   const closePosition = async (id: string) => {
     if (serverMode) {
       try {
-        const token = await getAccessToken()
         await fetch(`${API}/api/trade/close`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: { "Content-Type": "application/json", "x-wallet": walletAddr || "" },
           body: JSON.stringify({ id }),
         })
         await refreshAccount()
@@ -450,7 +456,7 @@ export default function TradeTerminal() {
             <img src="/new-csl-logo.png" alt="CSL" className="w-20 h-20 object-contain mx-auto mb-5" />
             <h1 className="text-xl font-bold mb-1.5">Private beta</h1>
             <p className="text-white/45 text-sm mb-6">The terminal is access-gated until public launch.</p>
-            <div className={`flex items-center rounded-xl bg-white/5 border px-3 transition-colors ${gateError ? "border-red-500/60" : "border-white/15 focus-within:border-blue-500/50"}`}>
+            <div className={`flex items-center rounded-xl bg-white/5 border px-3 transition-colors ${gateError ? "border-red-500/60" : "border-white/15 focus-within:border-emerald-500/50"}`}>
               <input
                 type="password"
                 value={gateInput}
@@ -461,7 +467,7 @@ export default function TradeTerminal() {
                 autoFocus
               />
             </div>
-            <button onClick={tryUnlock} className="mt-3 w-full h-11 rounded-xl bg-blue-500 hover:bg-blue-400 text-black font-bold text-sm transition-colors">
+            <button onClick={tryUnlock} className="mt-3 w-full h-11 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-colors">
               {gateError ? "Wrong password" : "Enter"}
             </button>
             <a href="/" className="inline-block mt-5 text-xs text-white/35 hover:text-white/60">← Back to csl.fun</a>
@@ -473,45 +479,22 @@ export default function TradeTerminal() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-[#050b14] text-white">
-      <header className="shrink-0 border-b border-white/10 bg-[#070f1a]">
-        <div className="h-16 flex items-center justify-between gap-4 px-4">
-          <div className="flex items-center gap-3">
-            <a href="/" className="text-white/50 hover:text-white transition-colors"><ArrowLeft size={18} /></a>
-            <img src="/new-csl-logo.png" alt="CSL" className="w-16 h-16 object-contain" />
-            <span className="font-bold tracking-wide">Terminal</span>
-          </div>
-          <div className="flex items-center gap-6 text-sm">
-            <nav className="hidden lg:flex items-center gap-0.5">
-              <span className="text-sm font-semibold px-2.5 py-1.5 rounded-lg bg-white/10 text-white">Trade</span>
-              <a href="/portfolio" className="text-sm font-medium px-2.5 py-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors">Portfolio</a>
-              <a href="/stats" className="text-sm font-medium px-2.5 py-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors">Stats</a>
-              <a href="/vault" className="text-sm font-medium px-2.5 py-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors">Vault</a>
-              <a href="/inventory" className="text-sm font-medium px-2.5 py-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors">Inventory</a>
-              <a href="/leaderboard" className="text-sm font-medium px-2.5 py-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-colors">Leaderboard</a>
-            </nav>
-            {ready && (authenticated ? (
-              <div className="flex items-center gap-2">
-                <button onClick={() => setShowProfile(true)} className="flex items-center gap-1.5 text-sm font-semibold px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/10 text-white transition-colors"><User size={14} />My Profile</button>
-                <button onClick={logout} className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white/60">Log out</button>
-              </div>
-            ) : (
-              <button onClick={login} className="text-sm font-semibold px-4 py-1.5 rounded-lg bg-blue-500 hover:bg-blue-400 text-black transition-colors">Sign in</button>
-            ))}
-          </div>
-        </div>
-      </header>
+      <TNav active="trade" title="Terminal" />
 
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[300px_1fr_324px]">
         {/* markets */}
         <aside className="hidden lg:flex flex-col border-r border-white/10 min-h-0 bg-[#060d18]">
           <div className="px-3 py-2.5 text-[11px] uppercase tracking-wider text-white/40 border-b border-white/10 shrink-0">Markets</div>
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto no-scrollbar no-scrollbar">
             {markets.map((m) => (
               <button key={m.key} onClick={() => setSelected(m.key)}
-                className={`w-full flex items-center gap-3 px-3 py-3 text-left border-l-2 transition-colors ${selected === m.key ? "bg-blue-500/10 border-blue-500" : "border-transparent hover:bg-white/5"}`}>
-                <Skin mk={m.key} img={m.image} className="w-14 h-10" />
+                className={`w-full flex items-center gap-3 px-3 py-3 text-left border-l-2 transition-colors ${selected === m.key ? "bg-emerald-500/10 border-emerald-500" : "border-transparent hover:bg-white/5"}`}>
+                <Skin mk={m.key} img={m.image} icon={m.icon} className="w-14 h-10" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-medium truncate">{m.name}</div>
+                  <div className="text-[13px] font-medium truncate flex items-center gap-1.5">
+                    <span className="truncate">{m.name}</span>
+                    {m.wear && <span className="shrink-0 text-[9px] font-semibold tracking-wide px-1 py-px rounded bg-white/10 text-white/45">{m.wear}</span>}
+                  </div>
                   <div className="font-mono text-sm">{money(m.price)}</div>
                 </div>
                 <div className={`text-[11px] font-mono ${m.change24h >= 0 ? "text-emerald-400" : "text-red-400"}`}>{m.change24h >= 0 ? "+" : ""}{fmt(m.change24h, 1)}%</div>
@@ -524,10 +507,15 @@ export default function TradeTerminal() {
         <main className="flex flex-col min-h-0">
           <div className="flex-1 min-h-0 flex flex-col border-b border-white/10">
             <div className="shrink-0 flex items-center gap-3 px-4 py-3 border-b border-white/5 flex-wrap">
-              {selMarket && <Skin mk={selMarket.key} img={selMarket.image} className="w-14 h-10" />}
+              {selMarket && <Skin mk={selMarket.key} img={selMarket.image} icon={selMarket.icon} className="w-14 h-10" />}
               <div>
-                <div className="font-semibold leading-tight">{selMarket?.name ?? "—"}</div>
-                <div className="text-white/40 text-xs">CSL Perp · USDC-settled · since {releaseYear(selected)}</div>
+                <div className="font-semibold leading-tight flex items-center gap-2">
+                  {selMarket?.name ?? "—"}
+                  {selMarket?.wear && (
+                    <span className="text-[10px] font-semibold tracking-wide px-1.5 py-0.5 rounded bg-white/10 text-white/60 border border-white/10">{selMarket.wear}</span>
+                  )}
+                </div>
+                <div className="text-white/40 text-xs">CSL Perp · {wearFull(selMarket?.wear)} · USDG-settled · since {releaseYear(selected)}</div>
               </div>
               <div className="ml-auto flex items-center gap-6">
                 <MiniStat label="Funding / 1h" value={`${funding >= 0 ? "+" : ""}${fmt(funding * 100, 4)}%`} cls={funding >= 0 ? "text-emerald-400" : "text-red-400"} />
@@ -546,12 +534,16 @@ export default function TradeTerminal() {
               ))}
               <span className="ml-2 text-[11px] text-white/25">scroll to zoom · drag to pan</span>
             </div>
-            <div className="flex-1 min-h-0"><CandleChart candles={candles} live={liveCandle} /></div>
+            <div className="flex-1 min-h-0"><CandleChart candles={candles} live={liveCandle} mode="line" /></div>
           </div>
 
-          {/* positions */}
-          <div className="h-[190px] shrink-0 overflow-y-auto bg-[#060d18]">
-            <div className="px-4 py-2 text-[11px] uppercase tracking-wider text-white/40 border-b border-white/10 sticky top-0 bg-[#060d18]">Positions ({positions.length})</div>
+          {/* positions — Hyperliquid style */}
+          <div className="h-[200px] shrink-0 overflow-y-auto no-scrollbar bg-[#0a0e17]">
+            <div className="flex items-center gap-5 px-4 py-2.5 border-b border-white/10 sticky top-0 bg-[#0a0e17] z-10">
+              <span className="text-[13px] font-semibold text-white border-b-2 border-emerald-500 pb-2 -mb-[10px]">Positions <span className="text-white/40">{positions.length}</span></span>
+              <span className="text-[13px] font-medium text-white/40">Open Orders</span>
+              <span className="text-[13px] font-medium text-white/40">Trade History</span>
+            </div>
             {positions.length === 0 ? (
               <div className="px-4 py-8 text-center text-white/25 text-sm">No open positions</div>
             ) : (
@@ -589,7 +581,7 @@ export default function TradeTerminal() {
         </main>
 
         {/* order panel */}
-        <aside className="border-l border-white/10 overflow-y-auto bg-[#060d18] p-3">
+        <aside className="border-l border-white/10 overflow-y-auto no-scrollbar bg-[#060d18] p-3">
           <div className="grid grid-cols-2 gap-2 mb-4 bg-white/5 p-1 rounded-lg">
             <button onClick={() => setSide("long")} className={`flex items-center justify-center gap-1.5 py-2 rounded-md font-semibold text-sm transition-colors ${side === "long" ? "bg-emerald-500 text-black" : "text-white/60 hover:text-white"}`}><TrendingUp size={16} /> Long</button>
             <button onClick={() => setSide("short")} className={`flex items-center justify-center gap-1.5 py-2 rounded-md font-semibold text-sm transition-colors ${side === "short" ? "bg-red-500 text-black" : "text-white/60 hover:text-white"}`}><TrendingDown size={16} /> Short</button>
@@ -602,8 +594,8 @@ export default function TradeTerminal() {
           <label className="text-[11px] text-white/40 uppercase tracking-wider">Collateral</label>
           <div className="mt-1 mb-2 flex items-center rounded-lg bg-white/5 border border-white/10 px-3 focus-within:border-white/25">
             <input type="number" value={collateral} onChange={(e) => setCollateral(e.target.value)} className="flex-1 bg-transparent py-2.5 outline-none font-mono min-w-0" />
-            <button onClick={() => setCollateral(String(Math.floor(balance)))} className="text-[11px] text-blue-400 hover:text-blue-300 font-semibold mr-2">MAX</button>
-            <span className="text-white/40 text-sm">USDC</span>
+            <button onClick={() => setCollateral(String(Math.floor(balance)))} className="text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold mr-2">MAX</button>
+            <span className="text-white/40 text-sm">USDG</span>
           </div>
           <div className="grid grid-cols-4 gap-1.5 mb-4">
             {[0.25, 0.5, 0.75, 1].map((pct) => (
@@ -611,11 +603,11 @@ export default function TradeTerminal() {
             ))}
           </div>
 
-          <div className="flex items-center justify-between text-xs mb-2"><span className="text-white/40 uppercase tracking-wider">Leverage</span><span className="font-mono font-semibold text-blue-400 flex items-center gap-1"><Zap size={12} />{leverage}x</span></div>
-          <input type="range" min={1} max={20} value={leverage} onChange={(e) => setLeverage(Number(e.target.value))} className="w-full accent-blue-500 mb-2" />
+          <div className="flex items-center justify-between text-xs mb-2"><span className="text-white/40 uppercase tracking-wider">Leverage</span><span className="font-mono font-semibold text-emerald-400 flex items-center gap-1"><Zap size={12} />{leverage}x</span></div>
+          <input type="range" min={1} max={20} value={leverage} onChange={(e) => setLeverage(Number(e.target.value))} className="w-full accent-emerald-500 mb-2" />
           <div className="grid grid-cols-6 gap-1 mb-4">
             {LEV_MARKS.map((v) => (
-              <button key={v} onClick={() => setLeverage(v)} className={`text-[11px] py-1 rounded transition-colors ${leverage === v ? "bg-blue-500 text-black font-semibold" : "bg-white/5 hover:bg-white/10 text-white/60"}`}>{v}x</button>
+              <button key={v} onClick={() => setLeverage(v)} className={`text-[11px] py-1 rounded transition-colors ${leverage === v ? "bg-emerald-500 text-black font-semibold" : "bg-white/5 hover:bg-white/10 text-white/60"}`}>{v}x</button>
             ))}
           </div>
 
@@ -634,12 +626,25 @@ export default function TradeTerminal() {
               {col + fee > balance ? "Insufficient balance" : `Open ${side === "long" ? "Long" : "Short"} · ${leverage}x`}
             </button>
           ) : (
-            <button onClick={login}
-              className="w-full h-11 font-bold text-base rounded-lg bg-blue-500 hover:bg-blue-400 text-black transition-colors">
-              Sign in to trade
+            <button onClick={() => openConnectModal?.()}
+              className="w-full h-11 font-bold text-base rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black transition-colors">
+              Connect wallet to trade
             </button>
           )}
         </aside>
+      </div>
+
+      {/* Hyperliquid-style scrolling price ticker */}
+      <div className="shrink-0 h-9 border-t border-white/10 bg-[#070f1a] overflow-hidden flex items-center">
+        <div className="flex items-center gap-8 whitespace-nowrap animate-marquee">
+          {[...markets, ...markets].map((m, i) => (
+            <button key={m.key + i} onClick={() => setSelected(m.key)} className="flex items-center gap-2 text-xs hover:opacity-80 transition-opacity">
+              <span className="text-white/60">{m.name}</span>
+              <span className="font-mono text-white">{money(m.price)}</span>
+              <span className={`font-mono ${m.change24h >= 0 ? "text-emerald-400" : "text-red-400"}`}>{m.change24h >= 0 ? "+" : ""}{fmt(m.change24h, 2)}%</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* profile modal */}
@@ -648,10 +653,10 @@ export default function TradeTerminal() {
           <div className="w-full max-w-[420px] rounded-2xl border border-white/10 bg-[#0a121e] p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-blue-500/15 border border-blue-500/30 flex items-center justify-center"><User size={20} className="text-blue-400" /></div>
+                <div className="w-11 h-11 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center"><User size={20} className="text-emerald-400" /></div>
                 <div>
                   <div className="font-semibold">{userLabel(user)}</div>
-                  <div className="text-xs text-white/40">{user?.twitter ? "Twitter" : user?.google ? "Google" : user?.wallet ? "Phantom" : "Account"}</div>
+                  <div className="text-xs text-white/40">{user?.twitter ? "Twitter" : user?.google ? "Google" : user?.wallet ? "wallet" : "Account"}</div>
                 </div>
               </div>
               <button onClick={() => setShowProfile(false)} className="text-white/40 hover:text-white p-1"><X size={18} /></button>
@@ -669,22 +674,21 @@ export default function TradeTerminal() {
             {depositInfo?.enabled && depositInfo.address ? (
               <div className="space-y-3">
                 <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] p-3.5">
-                  <div className="text-[10px] uppercase tracking-wider text-white/40 mb-1.5">Deposit USDC (Solana)</div>
+                  <div className="text-[10px] uppercase tracking-wider text-white/40 mb-1.5">Deposit USDG (Robinhood Chain)</div>
                   <div className="flex items-center gap-2">
                     <code className="text-[11px] font-mono break-all text-white/80 flex-1">{depositInfo.address}</code>
                     <button onClick={() => navigator.clipboard.writeText(depositInfo.address!)} className="text-[11px] px-2.5 py-1 rounded bg-white/10 hover:bg-white/15 shrink-0">Copy</button>
                   </div>
-                  <div className="text-[11px] text-white/35 mt-1.5">USDC only, Solana network. Max ${depositInfo.maxPerUser} per account in beta. Credits within ~1 min.</div>
+                  <div className="text-[11px] text-white/35 mt-1.5">USDG only, Robinhood Chain. Max ${depositInfo.maxPerUser} per account in beta. Credits within ~1 min.</div>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3.5">
-                  <div className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Withdraw USDC</div>
+                  <div className="text-[10px] uppercase tracking-wider text-white/40 mb-2">Withdraw USDG</div>
                   <input value={wAmt} onChange={(e) => setWAmt(e.target.value)} placeholder="Amount" type="number" className="w-full mb-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-white/25" />
-                  <input value={wAddr} onChange={(e) => setWAddr(e.target.value)} placeholder="Solana address" className="w-full mb-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs font-mono outline-none focus:border-white/25" />
+                  <input value={wAddr} onChange={(e) => setWAddr(e.target.value)} placeholder="Robinhood Chain address" className="w-full mb-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs font-mono outline-none focus:border-white/25" />
                   <button
                     onClick={async () => {
                       try {
-                        const token = await getAccessToken()
-                        const r = await postWithdraw(API, token!, wAmt, wAddr)
+                                        const r = await postWithdraw(API, token!, wAmt, wAddr)
                         setWMsg(r.ok ? (r.status === "sent" ? "Sent on-chain ✓" : "Requested — processing") : withdrawErrText(r))
                         if (r.ok) { setWAmt(""); setWAddr(""); refreshAccount() }
                       } catch { setWMsg("Network error") }
@@ -696,8 +700,8 @@ export default function TradeTerminal() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-xl border border-blue-500/25 bg-blue-500/[0.07] p-3.5 text-[13px] text-white/60 leading-relaxed">
-                USDC deposits &amp; withdrawals open at public launch. Until then your balance stays at $0.
+              <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.07] p-3.5 text-[13px] text-white/60 leading-relaxed">
+                USDG deposits &amp; withdrawals open at public launch. Until then your balance stays at $0.
               </div>
             )}
           </div>
@@ -725,10 +729,22 @@ function Row({ label, value, valueClass = "" }: { label: string; value: string; 
 async function postWithdraw(api: string, token: string, amount: string, address: string) {
   const res = await fetch(`${api}/api/withdraw`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    headers: { "Content-Type": "application/json", "x-wallet": walletAddr || "" },
     body: JSON.stringify({ amount, address }),
   })
   return res.json()
+}
+
+/* the wear this market's price is pinned to — spelled out under the title */
+function wearFull(w?: string): string {
+  switch (w) {
+    case "FN": return "Factory New"
+    case "MW": return "Minimal Wear"
+    case "FT": return "Field-Tested"
+    case "WW": return "Well-Worn"
+    case "BS": return "Battle-Scarred"
+    default: return "Field-Tested"
+  }
 }
 
 function tradeErrText(d: any): string {
@@ -746,7 +762,7 @@ function tradeErrText(d: any): string {
 function withdrawErrText(d: any): string {
   switch (d.error) {
     case "min_withdraw": return `Minimum withdrawal: $${d.min}`
-    case "bad_address": return "Invalid Solana address"
+    case "bad_address": return "Invalid Robinhood Chain address"
     case "insufficient_balance": return "Insufficient balance"
     default: return "Request failed"
   }

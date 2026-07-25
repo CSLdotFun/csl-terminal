@@ -72,15 +72,15 @@ export default function Portfolio() {
           <Card label="Trades" value={String(acct.trades)} />
         </div>
 
-        <div className="rounded-xl border border-blue-500/25 bg-blue-500/[0.06] p-4 text-sm text-white/60 leading-relaxed mb-10">
-          USDC deposits &amp; withdrawals open at public launch — balances stay at $0 until then.
+        <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] p-4 text-sm text-white/60 leading-relaxed mb-10">
+          USDG deposits &amp; withdrawals open at public launch — balances stay at $0 until then.
           Positions and history below reflect your real actions in the terminal.
         </div>
 
         <h2 className="text-lg font-semibold mb-3">Open positions ({acct.positions.length})</h2>
         <div className="rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden mb-10">
           {acct.positions.length === 0 ? (
-            <div className="px-5 py-10 text-center text-white/30 text-sm">No open positions — open one in the <a href="/trade" className="text-blue-400 hover:underline">terminal</a>.</div>
+            <div className="px-5 py-10 text-center text-white/30 text-sm">No open positions — open one in the <a href="/trade" className="text-emerald-400 hover:underline">terminal</a>.</div>
           ) : (
             <table className="w-full text-sm">
               <thead><tr className="text-white/40 text-[11px] uppercase border-b border-white/10">

@@ -4,19 +4,50 @@ import { useEffect, useRef } from "react"
 
 export type Candle = { time: number; open: number; high: number; low: number; close: number }
 
-// SSR-safe TradingView lightweight-charts candlestick chart.
+// SSR-safe TradingView lightweight-charts chart.
 // - `candles` : full series, re-applied via setData whenever its reference changes
 // - `live`    : latest forming candle, applied via series.update on each tick
-// Supports mouse-wheel zoom + drag to scroll back through history.
-export default function CandleChart({ candles, live }: { candles: Candle[]; live?: Candle | null }) {
+// - `mode`    : "candles" for intraday tick data (real OHLC), "line" for daily/
+//               weekly history that only has one price per bucket (drawing
+//               those as candlesticks produces the flat sticks / dots you saw)
+export default function CandleChart({ candles, live, mode = "candles" }: { candles: Candle[]; live?: Candle | null; mode?: "candles" | "line" }) {
   const elRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<any>(null)
   const seriesRef = useRef<any>(null)
-  const roRef = useRef<ResizeObserver | null>(null)
-  const dataRef = useRef<Candle[]>(candles)      // always-fresh data for async init
+  const modeRef = useRef<"candles" | "line">(mode)
+  const dataRef = useRef<Candle[]>(candles)
   const didInitData = useRef(false)
 
   dataRef.current = candles
+  modeRef.current = mode
+
+  const applyData = (series: any, arr: Candle[], m: "candles" | "line") => {
+    if (m === "line") {
+      // area needs {time, value}; use close as the single daily price
+      series.setData(arr.map((c) => ({ time: c.time, value: c.close })) as any)
+    } else {
+      series.setData(arr as any)
+    }
+  }
+
+  const makeSeries = (chart: any, m: "candles" | "line") => {
+    if (m === "line") {
+      return chart.addAreaSeries({
+        lineColor: "#10b981",
+        topColor: "rgba(16,185,129,0.22)",
+        bottomColor: "rgba(16,185,129,0.01)",
+        lineWidth: 2,
+        priceLineVisible: true,
+        priceFormat: { type: "price", precision: 2, minMove: 0.01 },
+      })
+    }
+    return chart.addCandlestickSeries({
+      upColor: "#10b981", downColor: "#ef4444",
+      borderUpColor: "#10b981", borderDownColor: "#ef4444",
+      wickUpColor: "#10b981", wickDownColor: "#ef4444",
+      priceFormat: { type: "price", precision: 2, minMove: 0.01 },
+    })
+  }
 
   useEffect(() => {
     let disposed = false
@@ -30,7 +61,7 @@ export default function CandleChart({ candles, live }: { candles: Candle[]; live
           vertLines: { color: "rgba(255,255,255,0.035)" },
           horzLines: { color: "rgba(255,255,255,0.035)" },
         },
-        rightPriceScale: { borderColor: "rgba(255,255,255,0.08)", scaleMargins: { top: 0.12, bottom: 0.12 } },
+        rightPriceScale: { borderColor: "rgba(255,255,255,0.08)", scaleMargins: { top: 0.1, bottom: 0.08 } },
         timeScale: {
           borderColor: "rgba(255,255,255,0.08)",
           timeVisible: true,
@@ -47,42 +78,55 @@ export default function CandleChart({ candles, live }: { candles: Candle[]; live
         handleScale: { mouseWheel: true, pinch: true, axisPressedMouseMove: true },
         handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true },
       })
-      const series = chart.addCandlestickSeries({
-        upColor: "#10b981", downColor: "#ef4444",
-        borderUpColor: "#10b981", borderDownColor: "#ef4444",
-        wickUpColor: "#10b981", wickDownColor: "#ef4444",
-        priceFormat: { type: "price", precision: 2, minMove: 0.01 },
-      })
+      const series = makeSeries(chart, modeRef.current)
+      ;(series as any).__mode = modeRef.current
       chartRef.current = chart
       seriesRef.current = series
       if (dataRef.current?.length) {
-        series.setData(dataRef.current as any)
-        chart.timeScale().scrollToRealTime()
+        applyData(series, dataRef.current, modeRef.current)
+        fitView(chart, dataRef.current.length)
         didInitData.current = true
       }
     })()
     return () => {
       disposed = true
-      roRef.current?.disconnect()
       chartRef.current?.remove?.()
       chartRef.current = null
       seriesRef.current = null
     }
   }, [])
 
-  // re-apply full data on market switch / reload
+  // re-apply full data on market / timeframe switch, rebuilding the series if
+  // the chart type changed (candles <-> line)
   useEffect(() => {
-    if (seriesRef.current && candles?.length) {
-      seriesRef.current.setData(candles as any)
-      chartRef.current?.timeScale().scrollToRealTime()
-      didInitData.current = true
+    const ch = chartRef.current
+    if (!ch || !candles?.length) return
+    // series type must match the current mode; if not, swap it out
+    if ((seriesRef.current as any)?.__mode !== mode) {
+      try { if (seriesRef.current) ch.removeSeries(seriesRef.current) } catch {}
+      const s = makeSeries(ch, mode)
+      ;(s as any).__mode = mode
+      seriesRef.current = s
     }
-  }, [candles])
+    applyData(seriesRef.current, candles, mode)
+    fitView(ch, candles.length)
+    didInitData.current = true
+  }, [candles, mode])
 
-  // live forming-candle updates
+  // live forming-candle updates (only meaningful for candle mode)
   useEffect(() => {
-    if (seriesRef.current && live && didInitData.current) seriesRef.current.update(live as any)
+    if (!seriesRef.current || !live || !didInitData.current) return
+    if (modeRef.current === "line") seriesRef.current.update({ time: live.time, value: live.close } as any)
+    else seriesRef.current.update(live as any)
   }, [live])
 
   return <div ref={elRef} className="w-full h-full" />
+}
+
+function fitView(chart: any, n: number) {
+  chart.priceScale("right").applyOptions({ autoScale: true })
+  // long real history: open on the most recent ~180 bars so it reads clearly;
+  // the user scrolls left for the full run. Short series: fit everything.
+  if (n > 200) chart.timeScale().setVisibleLogicalRange({ from: n - 180, to: n + 3 } as any)
+  else chart.timeScale().fitContent()
 }

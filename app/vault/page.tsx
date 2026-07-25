@@ -20,7 +20,7 @@ export default function Vault() {
           <span className="text-[11px] px-2.5 py-1 rounded-full border border-amber-500/40 text-amber-400">OPENS AT LAUNCH</span>
         </div>
         <p className="text-white/50 mb-10 max-w-[640px] leading-relaxed">
-          Deposit USDC, be the house. The vault takes the other side of trader positions
+          Deposit USDG, be the house. The vault takes the other side of trader positions
           and earns protocol fees — losses and gains are shared pro-rata by depositors.
         </p>
 
@@ -33,7 +33,7 @@ export default function Vault() {
 
         <h2 className="text-lg font-semibold mb-3">How it works</h2>
         <div className="grid md:grid-cols-3 gap-4 mb-10">
-          <Step n="01" t="Deposit USDC" d="Funds enter the shared vault on Solana. Withdraw any time after a short cooldown." />
+          <Step n="01" t="Deposit USDG" d="Funds enter the shared vault on Robinhood Chain. Withdraw any time after a short cooldown." />
           <Step n="02" t="Vault trades against traders" d="Every long or short on CSL is matched against vault liquidity, within per-market open-interest caps." />
           <Step n="03" t="Earn fees" d="Taker fees (0.06% of notional) and net trader losses accrue to the vault; net trader wins are paid from it." />
         </div>
@@ -46,16 +46,16 @@ export default function Vault() {
               <Row k="Maintenance margin" v="0.5%" />
               <Row k="Max leverage" v="20x, isolated" />
               <Row k="Funding" v="hourly, drifts within ±0.08%/h" />
-              <Row k="Settlement" v="USDC on Solana" />
+              <Row k="Settlement" v="USDG on Robinhood Chain" />
               <Row k="Markets" v="17 curated skin perps" />
             </tbody>
           </table>
         </div>
 
-        <div className="rounded-xl border border-blue-500/25 bg-blue-500/[0.06] p-4 text-sm text-white/60 leading-relaxed">
-          The vault opens together with USDC deposits at public launch — the numbers above
+        <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] p-4 text-sm text-white/60 leading-relaxed">
+          The vault opens together with USDG deposits at public launch — the numbers above
           are the real protocol parameters, and TVL starts from a true zero. No pre-seeded
-          balances, no projected APRs. Follow <a href="https://x.com/csldotfun" className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">@csldotfun</a> for the launch date.
+          balances, no projected APRs. Follow <a href="https://x.com/csldotfun" className="text-emerald-400 hover:underline" target="_blank" rel="noopener noreferrer">@csldotfun</a> for the launch date.
         </div>
       </main>
     </div>
@@ -73,7 +73,7 @@ function Card({ label, value }: { label: string; value: string }) {
 function Step({ n, t, d }: { n: string; t: string; d: string }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-      <div className="text-blue-400 font-mono text-sm mb-2">{n}</div>
+      <div className="text-emerald-400 font-mono text-sm mb-2">{n}</div>
       <h3 className="font-semibold mb-1.5">{t}</h3>
       <p className="text-white/50 text-sm leading-relaxed">{d}</p>
     </div>

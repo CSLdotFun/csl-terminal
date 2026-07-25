@@ -25,12 +25,12 @@ export default function Leaderboard() {
             </thead>
           </table>
           <div className="px-6 py-16 text-center">
-            <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-blue-500/10 border border-blue-500/25 flex items-center justify-center">
-              <Trophy size={24} className="text-blue-400" />
+            <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center">
+              <Trophy size={24} className="text-emerald-400" />
             </div>
             <div className="font-semibold mb-1.5">Season 1 hasn&apos;t started yet</div>
             <p className="text-white/45 text-sm max-w-[420px] mx-auto leading-relaxed">
-              The leaderboard goes live together with USDC deposits at public launch.
+              The leaderboard goes live together with USDG deposits at public launch.
               Every trade will count from day one — no pre-filled names, no bots.
             </p>
           </div>
