@@ -302,17 +302,22 @@ export default function TradeTerminal() {
           if (res.ok) {
             const d = await res.json()
             if (!cancelled && d.real && d.candles?.length) {
-              // real daily history from Steam, rebased onto the live price
               let daily: Candle[] = d.candles
               const live = priceMap.current.get(selected) ?? endPrice
-              const tail = daily.slice(-20).map((c) => c.close).filter((n) => n > 0).sort((a, b) => a - b)
-              const anchor = tail.length ? tail[Math.floor(tail.length / 2)] : 0
-              if (anchor > 0 && live > 0) {
-                const f = live / anchor
-                daily = daily
-                  .map((c) => ({ time: c.time, open: r(c.open * f), high: r(c.high * f), low: r(c.low * f), close: r(c.close * f) }))
-                  .filter((c) => c.close <= live * 8 && c.close >= live / 8)
-                  .map((c) => ({ ...c, high: Math.min(c.high, live * 8), low: Math.max(c.low, live / 8) }))
+              // "spliced" / "csl" sources are already real dollar values for their
+              // own era (genuine pre-cap Steam segment + CSL's own tracked closes)
+              // — rebasing would corrupt the genuine old Steam prices, so we only
+              // rescale the legacy single-source "steam"/"steamwebapi" case.
+              if (d.source !== "spliced" && d.source !== "csl") {
+                const tail = daily.slice(-20).map((c) => c.close).filter((n) => n > 0).sort((a, b) => a - b)
+                const anchor = tail.length ? tail[Math.floor(tail.length / 2)] : 0
+                if (anchor > 0 && live > 0) {
+                  const f = live / anchor
+                  daily = daily
+                    .map((c) => ({ time: c.time, open: r(c.open * f), high: r(c.high * f), low: r(c.low * f), close: r(c.close * f) }))
+                    .filter((c) => c.close <= live * 8 && c.close >= live / 8)
+                    .map((c) => ({ ...c, high: Math.min(c.high, live * 8), low: Math.max(c.low, live / 8) }))
+                }
               }
               // last point == the live mark, exactly
               if (daily.length) {

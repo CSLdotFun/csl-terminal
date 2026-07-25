@@ -15,7 +15,7 @@ export default function Vault() {
   return (
     <div className="min-h-screen bg-[#faf9f6] text-[#0e1512]">
       <TNav active="vault" light title="Vault" />
-      <SkinSides left="/cs2-awp-asiimov-skin.jpg" right="/cs2-awp-dragon-lore.png" />
+      <SkinSides left="/karambit-fade-side.png" right="/butterfly-blue-side.png" size={300} inset={30} leftRotate={-6} rightRotate={6} opacity={0.9} />
       <main className="relative z-10 max-w-[900px] mx-auto px-5 py-10">
         <div className="flex items-center gap-3 mb-2 flex-wrap">
           <h1 className="text-3xl font-bold tracking-[-0.02em]">CSL Liquidity Vault</h1>
