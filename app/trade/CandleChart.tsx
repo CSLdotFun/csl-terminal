@@ -33,18 +33,18 @@ export default function CandleChart({ candles, live, mode = "candles" }: { candl
   const makeSeries = (chart: any, m: "candles" | "line") => {
     if (m === "line") {
       return chart.addAreaSeries({
-        lineColor: "#10b981",
-        topColor: "rgba(16,185,129,0.22)",
-        bottomColor: "rgba(16,185,129,0.01)",
+        lineColor: "#8fb400",
+        topColor: "rgba(205,246,10,0.28)",
+        bottomColor: "rgba(205,246,10,0.02)",
         lineWidth: 2,
         priceLineVisible: true,
         priceFormat: { type: "price", precision: 2, minMove: 0.01 },
       })
     }
     return chart.addCandlestickSeries({
-      upColor: "#10b981", downColor: "#ef4444",
-      borderUpColor: "#10b981", borderDownColor: "#ef4444",
-      wickUpColor: "#10b981", wickDownColor: "#ef4444",
+      upColor: "#8fb400", downColor: "#ef4444",
+      borderUpColor: "#8fb400", borderDownColor: "#ef4444",
+      wickUpColor: "#8fb400", wickDownColor: "#ef4444",
       priceFormat: { type: "price", precision: 2, minMove: 0.01 },
     })
   }
@@ -56,14 +56,14 @@ export default function CandleChart({ candles, live, mode = "candles" }: { candl
       if (disposed || !elRef.current) return
       const chart = LWC.createChart(elRef.current, {
         autoSize: true,
-        layout: { background: { color: "transparent" }, textColor: "#8b98a9", fontSize: 11, fontFamily: "ui-monospace, monospace" },
+        layout: { background: { color: "transparent" }, textColor: "#5b6470", fontSize: 11, fontFamily: "ui-monospace, monospace" },
         grid: {
-          vertLines: { color: "rgba(255,255,255,0.035)" },
-          horzLines: { color: "rgba(255,255,255,0.035)" },
+          vertLines: { color: "rgba(0,0,0,0.05)" },
+          horzLines: { color: "rgba(0,0,0,0.05)" },
         },
-        rightPriceScale: { borderColor: "rgba(255,255,255,0.08)", scaleMargins: { top: 0.1, bottom: 0.08 } },
+        rightPriceScale: { borderColor: "rgba(0,0,0,0.10)", scaleMargins: { top: 0.1, bottom: 0.08 } },
         timeScale: {
-          borderColor: "rgba(255,255,255,0.08)",
+          borderColor: "rgba(0,0,0,0.10)",
           timeVisible: true,
           secondsVisible: false,
           rightOffset: 5,
@@ -72,8 +72,8 @@ export default function CandleChart({ candles, live, mode = "candles" }: { candl
         },
         crosshair: {
           mode: LWC.CrosshairMode.Normal,
-          vertLine: { color: "rgba(255,255,255,0.2)", labelBackgroundColor: "#1e293b" },
-          horzLine: { color: "rgba(255,255,255,0.2)", labelBackgroundColor: "#1e293b" },
+          vertLine: { color: "rgba(0,0,0,0.25)", labelBackgroundColor: "#0e1512" },
+          horzLine: { color: "rgba(0,0,0,0.25)", labelBackgroundColor: "#0e1512" },
         },
         handleScale: { mouseWheel: true, pinch: true, axisPressedMouseMove: true },
         handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true },

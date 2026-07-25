@@ -467,7 +467,7 @@ export default function TradeTerminal() {
                 autoFocus
               />
             </div>
-            <button onClick={tryUnlock} className="mt-3 w-full h-11 rounded-xl bg-[#CDF60A] hover:bg-[#d9fa3a] text-black font-bold text-sm transition-colors">
+            <button onClick={tryUnlock} className="mt-3 w-full h-11 rounded-xl bg-[#CDF60A] hover:bg-[#d9fa3a] text-[#0e1512] font-bold text-sm transition-colors">
               {gateError ? "Wrong password" : "Enter"}
             </button>
             <a href="/" className="inline-block mt-5 text-xs text-[#0e1512]/35 hover:text-[#0e1512]/60">← Back to csl.fun</a>
@@ -483,7 +483,7 @@ export default function TradeTerminal() {
 
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[300px_1fr_324px]">
         {/* markets */}
-        <aside className="hidden lg:flex flex-col border-r border-black/10 min-h-0 bg-[#060d18]">
+        <aside className="hidden lg:flex flex-col border-r border-black/10 min-h-0 bg-white">
           <div className="px-3 py-2.5 text-[11px] uppercase tracking-wider text-[#0e1512]/40 border-b border-black/10 shrink-0">Markets</div>
           <div className="flex-1 overflow-y-auto no-scrollbar no-scrollbar">
             {markets.map((m) => (
@@ -538,8 +538,8 @@ export default function TradeTerminal() {
           </div>
 
           {/* positions — Hyperliquid style */}
-          <div className="h-[200px] shrink-0 overflow-y-auto no-scrollbar bg-[#0a0e17]">
-            <div className="flex items-center gap-5 px-4 py-2.5 border-b border-black/10 sticky top-0 bg-[#0a0e17] z-10">
+          <div className="h-[200px] shrink-0 overflow-y-auto no-scrollbar bg-[#fbfaf7]">
+            <div className="flex items-center gap-5 px-4 py-2.5 border-b border-black/10 sticky top-0 bg-[#fbfaf7] z-10">
               <span className="text-[13px] font-semibold text-[#0e1512] border-b-2 border-[#CDF60A] pb-2 -mb-[10px]">Positions <span className="text-[#0e1512]/40">{positions.length}</span></span>
               <span className="text-[13px] font-medium text-[#0e1512]/40">Open Orders</span>
               <span className="text-[13px] font-medium text-[#0e1512]/40">Trade History</span>
@@ -581,10 +581,10 @@ export default function TradeTerminal() {
         </main>
 
         {/* order panel */}
-        <aside className="border-l border-black/10 overflow-y-auto no-scrollbar bg-[#060d18] p-3">
+        <aside className="border-l border-black/10 overflow-y-auto no-scrollbar bg-white p-3">
           <div className="grid grid-cols-2 gap-2 mb-4 bg-black/5 p-1 rounded-lg">
-            <button onClick={() => setSide("long")} className={`flex items-center justify-center gap-1.5 py-2 rounded-md font-semibold text-sm transition-colors ${side === "long" ? "bg-[#CDF60A] text-black" : "text-[#0e1512]/60 hover:text-[#0e1512]"}`}><TrendingUp size={16} /> Long</button>
-            <button onClick={() => setSide("short")} className={`flex items-center justify-center gap-1.5 py-2 rounded-md font-semibold text-sm transition-colors ${side === "short" ? "bg-red-500 text-black" : "text-[#0e1512]/60 hover:text-[#0e1512]"}`}><TrendingDown size={16} /> Short</button>
+            <button onClick={() => setSide("long")} className={`flex items-center justify-center gap-1.5 py-2 rounded-md font-semibold text-sm transition-colors ${side === "long" ? "bg-[#CDF60A] text-[#0e1512]" : "text-[#0e1512]/60 hover:text-[#0e1512]"}`}><TrendingUp size={16} /> Long</button>
+            <button onClick={() => setSide("short")} className={`flex items-center justify-center gap-1.5 py-2 rounded-md font-semibold text-sm transition-colors ${side === "short" ? "bg-red-500 text-white" : "text-[#0e1512]/60 hover:text-[#0e1512]"}`}><TrendingDown size={16} /> Short</button>
           </div>
 
           {authenticated && (
@@ -604,10 +604,10 @@ export default function TradeTerminal() {
           </div>
 
           <div className="flex items-center justify-between text-xs mb-2"><span className="text-[#0e1512]/40 uppercase tracking-wider">Leverage</span><span className="font-mono font-semibold text-[#5f7a05] flex items-center gap-1"><Zap size={12} />{leverage}x</span></div>
-          <input type="range" min={1} max={20} value={leverage} onChange={(e) => setLeverage(Number(e.target.value))} className="w-full accent-emerald-500 mb-2" />
+          <input type="range" min={1} max={20} value={leverage} onChange={(e) => setLeverage(Number(e.target.value))} className="w-full accent-[#CDF60A] mb-2" />
           <div className="grid grid-cols-6 gap-1 mb-4">
             {LEV_MARKS.map((v) => (
-              <button key={v} onClick={() => setLeverage(v)} className={`text-[11px] py-1 rounded transition-colors ${leverage === v ? "bg-[#CDF60A] text-black font-semibold" : "bg-black/5 hover:bg-black/10 text-[#0e1512]/60"}`}>{v}x</button>
+              <button key={v} onClick={() => setLeverage(v)} className={`text-[11px] py-1 rounded transition-colors ${leverage === v ? "bg-[#CDF60A] text-[#0e1512] font-semibold" : "bg-black/5 hover:bg-black/10 text-[#0e1512]/60"}`}>{v}x</button>
             ))}
           </div>
 
@@ -622,12 +622,12 @@ export default function TradeTerminal() {
           {tradeErr && <div className="mb-2 text-xs text-red-600 text-center">{tradeErr}</div>}
           {authenticated ? (
             <button onClick={openPosition} disabled={!canOpen}
-              className={`w-full h-11 font-bold text-base rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${side === "long" ? "bg-[#CDF60A] hover:bg-[#d9fa3a] text-black" : "bg-red-500 hover:bg-red-400 text-black"}`}>
+              className={`w-full h-11 font-bold text-base rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${side === "long" ? "bg-[#CDF60A] hover:bg-[#d9fa3a] text-[#0e1512]" : "bg-red-500 hover:bg-red-400 text-white"}`}>
               {col + fee > balance ? "Insufficient balance" : `Open ${side === "long" ? "Long" : "Short"} · ${leverage}x`}
             </button>
           ) : (
             <button onClick={() => openConnectModal?.()}
-              className="w-full h-11 font-bold text-base rounded-lg bg-[#CDF60A] hover:bg-[#d9fa3a] text-black transition-colors">
+              className="w-full h-11 font-bold text-base rounded-lg bg-[#CDF60A] hover:bg-[#d9fa3a] text-[#0e1512] transition-colors">
               Connect wallet to trade
             </button>
           )}
@@ -650,7 +650,7 @@ export default function TradeTerminal() {
       {/* profile modal */}
       {showProfile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setShowProfile(false)}>
-          <div className="w-full max-w-[420px] rounded-2xl border border-black/10 bg-[#0a121e] p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-[420px] rounded-2xl border border-black/10 bg-white p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-full bg-[#CDF60A]/15 border border-[#CDF60A]/30 flex items-center justify-center"><User size={20} className="text-[#5f7a05]" /></div>

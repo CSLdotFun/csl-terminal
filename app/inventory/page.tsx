@@ -60,7 +60,7 @@ export default function Inventory() {
               className="flex-1 bg-transparent py-3 outline-none text-sm min-w-0"
             />
           </div>
-          <button onClick={load} disabled={loading} className="px-6 rounded-xl bg-[#CDF60A] hover:bg-[#d9fa3a] disabled:opacity-50 text-black font-bold text-sm transition-colors">
+          <button onClick={load} disabled={loading} className="px-6 rounded-xl bg-[#CDF60A] hover:bg-[#d9fa3a] disabled:opacity-50 text-[#0e1512] font-bold text-sm transition-colors">
             {loading ? "Loading…" : "Load"}
           </button>
         </div>
@@ -78,7 +78,7 @@ export default function Inventory() {
                     <div key={idx} className="rounded-xl border border-[#CDF60A]/40 bg-[#CDF60A]/[0.05] p-3 flex flex-col">
                       {i.icon && <img src={i.icon} alt="" className="h-20 object-contain mx-auto mb-2" />}
                       <div className="text-xs font-medium leading-snug mb-2">{i.name}</div>
-                      <a href="/trade" className="mt-auto text-center text-xs font-bold py-1.5 rounded-lg bg-red-500/90 hover:bg-red-400 text-black transition-colors">Hedge · Short</a>
+                      <a href="/trade" className="mt-auto text-center text-xs font-bold py-1.5 rounded-lg bg-red-500/90 hover:bg-red-400 text-white transition-colors">Hedge · Short</a>
                     </div>
                   ))}
                 </div>
