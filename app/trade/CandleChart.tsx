@@ -61,14 +61,16 @@ export default function CandleChart({ candles, live, mode = "candles" }: { candl
           vertLines: { color: "rgba(0,0,0,0.05)" },
           horzLines: { color: "rgba(0,0,0,0.05)" },
         },
-        rightPriceScale: { borderColor: "rgba(0,0,0,0.10)", scaleMargins: { top: 0.1, bottom: 0.08 } },
+        rightPriceScale: { borderColor: "rgba(0,0,0,0.10)", scaleMargins: { top: 0.06, bottom: 0.04 } },
         timeScale: {
           borderColor: "rgba(0,0,0,0.10)",
           timeVisible: true,
           secondsVisible: false,
-          rightOffset: 5,
-          barSpacing: 9,
-          minBarSpacing: 2,
+          rightOffset: 1,
+          barSpacing: 6,
+          minBarSpacing: 0.5,
+          fixLeftEdge: true,
+          fixRightEdge: true,
         },
         crosshair: {
           mode: LWC.CrosshairMode.Normal,
@@ -125,8 +127,8 @@ export default function CandleChart({ candles, live, mode = "candles" }: { candl
 
 function fitView(chart: any, n: number) {
   chart.priceScale("right").applyOptions({ autoScale: true })
-  // long real history: open on the most recent ~180 bars so it reads clearly;
-  // the user scrolls left for the full run. Short series: fit everything.
-  if (n > 200) chart.timeScale().setVisibleLogicalRange({ from: n - 180, to: n + 3 } as any)
-  else chart.timeScale().fitContent()
+  // Always stretch the full series edge-to-edge so the chart fills the whole
+  // width — no empty gap on the left, no big pad on the right. fixLeftEdge /
+  // fixRightEdge (set on the timeScale) keep it pinned when the user pans.
+  chart.timeScale().fitContent()
 }
