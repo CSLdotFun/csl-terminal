@@ -39,8 +39,8 @@ const queryClient = new QueryClient()
 
 // CSL-branded dark modal: near-black surfaces, CSL green accent.
 const cslTheme = darkTheme({
-  accentColor: "#35F26B",
-  accentColorForeground: "#04140d",
+  accentColor: "#CDF60A",
+  accentColorForeground: "#1a1e05",
   borderRadius: "large",
   overlayBlur: "small",
 })

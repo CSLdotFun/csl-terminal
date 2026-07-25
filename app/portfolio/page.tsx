@@ -66,13 +66,13 @@ export default function Portfolio() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-10">
           <Card label="Balance" value={money(acct.balance)} />
           <Card label="Equity" value={money(equity)} />
-          <Card label="Unrealized PnL" value={`${upnl >= 0 ? "+" : ""}${money(upnl)}`} cls={upnl > 0 ? "text-emerald-700" : upnl < 0 ? "text-red-600" : ""} />
-          <Card label="Realized PnL" value={`${acct.realized >= 0 ? "+" : ""}${money(acct.realized)}`} cls={acct.realized > 0 ? "text-emerald-700" : acct.realized < 0 ? "text-red-600" : ""} />
+          <Card label="Unrealized PnL" value={`${upnl >= 0 ? "+" : ""}${money(upnl)}`} cls={upnl > 0 ? "text-[#5f7a05]" : upnl < 0 ? "text-red-600" : ""} />
+          <Card label="Realized PnL" value={`${acct.realized >= 0 ? "+" : ""}${money(acct.realized)}`} cls={acct.realized > 0 ? "text-[#5f7a05]" : acct.realized < 0 ? "text-red-600" : ""} />
           <Card label="Volume traded" value={money(acct.volume)} />
           <Card label="Trades" value={String(acct.trades)} />
         </div>
 
-        <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] p-4 text-sm text-[#0e1512]/60 leading-relaxed mb-10">
+        <div className="rounded-xl border border-[#CDF60A]/40 bg-[#CDF60A]/[0.06] p-4 text-sm text-[#0e1512]/60 leading-relaxed mb-10">
           USDG deposits &amp; withdrawals open at public launch — balances stay at $0 until then.
           Positions and history below reflect your real actions in the terminal.
         </div>
@@ -80,7 +80,7 @@ export default function Portfolio() {
         <h2 className="text-lg font-semibold mb-3">Open positions ({acct.positions.length})</h2>
         <div className="rounded-xl border border-black/10 bg-black/[0.02] overflow-hidden mb-10">
           {acct.positions.length === 0 ? (
-            <div className="px-5 py-10 text-center text-[#0e1512]/30 text-sm">No open positions — open one in the <a href="/trade" className="text-emerald-700 hover:underline">terminal</a>.</div>
+            <div className="px-5 py-10 text-center text-[#0e1512]/30 text-sm">No open positions — open one in the <a href="/trade" className="text-[#5f7a05] hover:underline">terminal</a>.</div>
           ) : (
             <table className="w-full text-sm">
               <thead><tr className="text-[#0e1512]/40 text-[11px] uppercase border-b border-black/10">
@@ -95,11 +95,11 @@ export default function Portfolio() {
                   return (
                     <tr key={p.id} className="border-t border-black/5">
                       <td className="px-4 py-2.5 text-xs">{p.name}</td>
-                      <td className={`px-2 text-xs font-semibold ${p.side === "long" ? "text-emerald-700" : "text-red-600"}`}>{p.side.toUpperCase()} {p.leverage}x</td>
+                      <td className={`px-2 text-xs font-semibold ${p.side === "long" ? "text-[#5f7a05]" : "text-red-600"}`}>{p.side.toUpperCase()} {p.leverage}x</td>
                       <td className="px-2 text-right font-mono text-xs">{money(p.notional)}</td>
                       <td className="px-2 text-right font-mono text-xs">{money(p.entry)}</td>
                       <td className="px-2 text-right font-mono text-xs">{money(px)}</td>
-                      <td className={`px-4 text-right font-mono text-xs ${pnl >= 0 ? "text-emerald-700" : "text-red-600"}`}>{pnl >= 0 ? "+" : ""}{money(pnl)}</td>
+                      <td className={`px-4 text-right font-mono text-xs ${pnl >= 0 ? "text-[#5f7a05]" : "text-red-600"}`}>{pnl >= 0 ? "+" : ""}{money(pnl)}</td>
                     </tr>
                   )
                 })}
@@ -123,10 +123,10 @@ export default function Portfolio() {
                 {acct.history.slice(0, 30).map((t) => (
                   <tr key={t.id} className="border-t border-black/5">
                     <td className="px-4 py-2.5 text-xs">{t.name}</td>
-                    <td className={`px-2 text-xs font-semibold ${t.side === "long" ? "text-emerald-700" : "text-red-600"}`}>{t.side.toUpperCase()} {t.leverage}x</td>
+                    <td className={`px-2 text-xs font-semibold ${t.side === "long" ? "text-[#5f7a05]" : "text-red-600"}`}>{t.side.toUpperCase()} {t.leverage}x</td>
                     <td className="px-2 text-right font-mono text-xs">{money(t.entry)}</td>
                     <td className="px-2 text-right font-mono text-xs">{money(t.exit)}</td>
-                    <td className={`px-2 text-right font-mono text-xs ${t.pnl >= 0 ? "text-emerald-700" : "text-red-600"}`}>{t.pnl >= 0 ? "+" : ""}{money(t.pnl)}</td>
+                    <td className={`px-2 text-right font-mono text-xs ${t.pnl >= 0 ? "text-[#5f7a05]" : "text-red-600"}`}>{t.pnl >= 0 ? "+" : ""}{money(t.pnl)}</td>
                     <td className="px-4 text-right font-mono text-xs text-[#0e1512]/40">{new Date(t.closedAt).toLocaleString()}</td>
                   </tr>
                 ))}

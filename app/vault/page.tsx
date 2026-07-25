@@ -52,10 +52,10 @@ export default function Vault() {
           </table>
         </div>
 
-        <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] p-4 text-sm text-[#0e1512]/60 leading-relaxed">
+        <div className="rounded-xl border border-[#CDF60A]/40 bg-[#CDF60A]/[0.06] p-4 text-sm text-[#0e1512]/60 leading-relaxed">
           The vault opens together with USDG deposits at public launch — the numbers above
           are the real protocol parameters, and TVL starts from a true zero. No pre-seeded
-          balances, no projected APRs. Follow <a href="https://x.com/csldotfun" className="text-emerald-700 hover:underline" target="_blank" rel="noopener noreferrer">@csldotfun</a> for the launch date.
+          balances, no projected APRs. Follow <a href="https://x.com/csldotfun" className="text-[#5f7a05] hover:underline" target="_blank" rel="noopener noreferrer">@csldotfun</a> for the launch date.
         </div>
       </main>
     </div>
@@ -73,7 +73,7 @@ function Card({ label, value }: { label: string; value: string }) {
 function Step({ n, t, d }: { n: string; t: string; d: string }) {
   return (
     <div className="rounded-2xl border border-black/10 bg-black/[0.03] p-5">
-      <div className="text-emerald-700 font-mono text-sm mb-2">{n}</div>
+      <div className="text-[#5f7a05] font-mono text-sm mb-2">{n}</div>
       <h3 className="font-semibold mb-1.5">{t}</h3>
       <p className="text-[#0e1512]/50 text-sm leading-relaxed">{d}</p>
     </div>

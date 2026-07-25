@@ -131,7 +131,7 @@ export default function MyProfile() {
               {shownAvatar ? (
                 <img src={shownAvatar} alt="" className="w-20 h-20 rounded-full object-cover border border-black/15" />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-2xl font-bold text-emerald-700">
+                <div className="w-20 h-20 rounded-full bg-[#CDF60A]/15 border border-[#CDF60A]/30 flex items-center justify-center text-2xl font-bold text-[#5f7a05]">
                   {label.replace("@", "").slice(0, 1).toUpperCase()}
                 </div>
               )}
@@ -169,8 +169,8 @@ export default function MyProfile() {
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* deposit */}
-            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.04] p-5">
-              <div className="text-[11px] uppercase tracking-wider text-emerald-700/70">Deposit USDG (Robinhood Chain)</div>
+            <div className="rounded-2xl border border-[#CDF60A]/20 bg-[#CDF60A]/[0.04] p-5">
+              <div className="text-[11px] uppercase tracking-wider text-[#5f7a05]/70">Deposit USDG (Robinhood Chain)</div>
               {depositInfo?.enabled && depositInfo.address ? (
                 <>
                   {/* one click: the wallet signs a USDG transfer straight to this
@@ -227,7 +227,7 @@ export default function MyProfile() {
           <div className="rounded-2xl border border-black/10 bg-[#fbfaf7] overflow-hidden">
             <div className="px-5 py-3.5 text-[11px] uppercase tracking-wider text-[#0e1512]/35 border-b border-black/10">Trade History</div>
             {history.length === 0 ? (
-              <div className="px-5 py-10 text-center text-[#0e1512]/30 text-sm">No closed trades yet — open one in the <a href="/trade" className="text-emerald-700 hover:underline">terminal</a>.</div>
+              <div className="px-5 py-10 text-center text-[#0e1512]/30 text-sm">No closed trades yet — open one in the <a href="/trade" className="text-[#5f7a05] hover:underline">terminal</a>.</div>
             ) : (
               <table className="w-full text-sm">
                 <tbody>
@@ -240,13 +240,13 @@ export default function MyProfile() {
                         </div>
                       </td>
                       <td className="px-3 py-3">
-                        <span className={`inline-flex items-center gap-1 text-xs font-semibold ${t.side === "short" ? "text-red-600" : "text-emerald-700"}`}>
+                        <span className={`inline-flex items-center gap-1 text-xs font-semibold ${t.side === "short" ? "text-red-600" : "text-[#5f7a05]"}`}>
                           {t.side === "short" ? <TrendingDown size={12} /> : <TrendingUp size={12} />}
                           {t.side === "short" ? "Short" : "Long"} · {t.leverage}x
                         </span>
                       </td>
                       <td className="px-3 py-3 font-mono text-[#0e1512]/50 text-xs">${fmt(t.entry)} → ${fmt(t.exit)}</td>
-                      <td className={`px-3 py-3 font-mono font-semibold ${Number(t.pnl) >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+                      <td className={`px-3 py-3 font-mono font-semibold ${Number(t.pnl) >= 0 ? "text-[#5f7a05]" : "text-red-600"}`}>
                         {Number(t.pnl) >= 0 ? "+" : ""}${fmt(t.pnl)}
                       </td>
                       <td className="px-5 py-3 text-right text-xs text-[#0e1512]/30">{new Date(t.closedAt).toLocaleDateString()}</td>
@@ -266,7 +266,7 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: "up
   return (
     <div className="rounded-xl border border-black/10 bg-[#fbfaf7] px-4 py-3.5">
       <div className="text-[10px] uppercase tracking-wider text-[#0e1512]/35">{label}</div>
-      <div className={`text-lg font-bold font-mono mt-1 ${tone === "up" ? "text-emerald-700" : tone === "down" ? "text-red-600" : ""}`}>{value}</div>
+      <div className={`text-lg font-bold font-mono mt-1 ${tone === "up" ? "text-[#5f7a05]" : tone === "down" ? "text-red-600" : ""}`}>{value}</div>
     </div>
   )
 }

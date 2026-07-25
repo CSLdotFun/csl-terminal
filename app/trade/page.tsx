@@ -456,7 +456,7 @@ export default function TradeTerminal() {
             <img src="/new-csl-logo.png" alt="CSL" className="w-20 h-20 object-contain mx-auto mb-5" />
             <h1 className="text-xl font-bold mb-1.5">Private beta</h1>
             <p className="text-[#0e1512]/45 text-sm mb-6">The terminal is access-gated until public launch.</p>
-            <div className={`flex items-center rounded-xl bg-black/5 border px-3 transition-colors ${gateError ? "border-red-500/60" : "border-black/15 focus-within:border-emerald-500/50"}`}>
+            <div className={`flex items-center rounded-xl bg-black/5 border px-3 transition-colors ${gateError ? "border-red-500/60" : "border-black/15 focus-within:border-[#CDF60A]/50"}`}>
               <input
                 type="password"
                 value={gateInput}
@@ -467,7 +467,7 @@ export default function TradeTerminal() {
                 autoFocus
               />
             </div>
-            <button onClick={tryUnlock} className="mt-3 w-full h-11 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-colors">
+            <button onClick={tryUnlock} className="mt-3 w-full h-11 rounded-xl bg-[#CDF60A] hover:bg-[#d9fa3a] text-black font-bold text-sm transition-colors">
               {gateError ? "Wrong password" : "Enter"}
             </button>
             <a href="/" className="inline-block mt-5 text-xs text-[#0e1512]/35 hover:text-[#0e1512]/60">← Back to csl.fun</a>
@@ -488,7 +488,7 @@ export default function TradeTerminal() {
           <div className="flex-1 overflow-y-auto no-scrollbar no-scrollbar">
             {markets.map((m) => (
               <button key={m.key} onClick={() => setSelected(m.key)}
-                className={`w-full flex items-center gap-3 px-3 py-3 text-left border-l-2 transition-colors ${selected === m.key ? "bg-emerald-500/10 border-emerald-500" : "border-transparent hover:bg-black/5"}`}>
+                className={`w-full flex items-center gap-3 px-3 py-3 text-left border-l-2 transition-colors ${selected === m.key ? "bg-[#CDF60A]/10 border-[#CDF60A]" : "border-transparent hover:bg-black/5"}`}>
                 <Skin mk={m.key} img={m.image} icon={m.icon} className="w-14 h-10" />
                 <div className="min-w-0 flex-1">
                   <div className="text-[13px] font-medium truncate flex items-center gap-1.5">
@@ -497,7 +497,7 @@ export default function TradeTerminal() {
                   </div>
                   <div className="font-mono text-sm">{money(m.price)}</div>
                 </div>
-                <div className={`text-[11px] font-mono ${m.change24h >= 0 ? "text-emerald-700" : "text-red-600"}`}>{m.change24h >= 0 ? "+" : ""}{fmt(m.change24h, 1)}%</div>
+                <div className={`text-[11px] font-mono ${m.change24h >= 0 ? "text-[#5f7a05]" : "text-red-600"}`}>{m.change24h >= 0 ? "+" : ""}{fmt(m.change24h, 1)}%</div>
               </button>
             ))}
           </div>
@@ -518,11 +518,11 @@ export default function TradeTerminal() {
                 <div className="text-[#0e1512]/40 text-xs">CSL Perp · {wearFull(selMarket?.wear)} · USDG-settled · since {releaseYear(selected)}</div>
               </div>
               <div className="ml-auto flex items-center gap-6">
-                <MiniStat label="Funding / 1h" value={`${funding >= 0 ? "+" : ""}${fmt(funding * 100, 4)}%`} cls={funding >= 0 ? "text-emerald-700" : "text-red-600"} />
+                <MiniStat label="Funding / 1h" value={`${funding >= 0 ? "+" : ""}${fmt(funding * 100, 4)}%`} cls={funding >= 0 ? "text-[#5f7a05]" : "text-red-600"} />
                 <MiniStat label="Next funding" value={hms(countdown)} />
                 <div className="text-right">
                   <div className="font-mono text-2xl font-bold leading-none">{money(mark)}</div>
-                  <div className={`text-xs font-mono ${dayUp ? "text-emerald-700" : "text-red-600"}`}>{dayUp ? "+" : ""}{fmt(selMarket?.change24h ?? 0, 2)}% 24h</div>
+                  <div className={`text-xs font-mono ${dayUp ? "text-[#5f7a05]" : "text-red-600"}`}>{dayUp ? "+" : ""}{fmt(selMarket?.change24h ?? 0, 2)}% 24h</div>
                 </div>
               </div>
             </div>
@@ -540,7 +540,7 @@ export default function TradeTerminal() {
           {/* positions — Hyperliquid style */}
           <div className="h-[200px] shrink-0 overflow-y-auto no-scrollbar bg-[#0a0e17]">
             <div className="flex items-center gap-5 px-4 py-2.5 border-b border-black/10 sticky top-0 bg-[#0a0e17] z-10">
-              <span className="text-[13px] font-semibold text-[#0e1512] border-b-2 border-emerald-500 pb-2 -mb-[10px]">Positions <span className="text-[#0e1512]/40">{positions.length}</span></span>
+              <span className="text-[13px] font-semibold text-[#0e1512] border-b-2 border-[#CDF60A] pb-2 -mb-[10px]">Positions <span className="text-[#0e1512]/40">{positions.length}</span></span>
               <span className="text-[13px] font-medium text-[#0e1512]/40">Open Orders</span>
               <span className="text-[13px] font-medium text-[#0e1512]/40">Trade History</span>
             </div>
@@ -565,11 +565,11 @@ export default function TradeTerminal() {
                     return (
                       <tr key={p.id} className="border-t border-black/5">
                         <td className="px-4 py-2"><div className="flex items-center gap-2"><Skin mk={p.key} img={p.image} className="w-8 h-6" /><span className="text-xs truncate max-w-[130px]">{p.name}</span></div></td>
-                        <td className="px-2"><span className={`text-xs font-semibold ${p.side === "long" ? "text-emerald-700" : "text-red-600"}`}>{p.side === "long" ? "LONG" : "SHORT"} {p.leverage}x</span></td>
+                        <td className="px-2"><span className={`text-xs font-semibold ${p.side === "long" ? "text-[#5f7a05]" : "text-red-600"}`}>{p.side === "long" ? "LONG" : "SHORT"} {p.leverage}x</span></td>
                         <td className="px-2 text-right font-mono text-xs">{money(p.notional)}</td>
                         <td className="px-2 text-right font-mono text-xs">{money(p.entry)}</td>
                         <td className="px-2 text-right font-mono text-xs text-amber-600/80">{money(p.liq)}</td>
-                        <td className={`px-2 text-right font-mono text-xs ${up ? "text-emerald-700" : "text-red-600"}`}>{up ? "+" : ""}{money(pnl)} <span className="opacity-70">({up ? "+" : ""}{fmt(roe)}%)</span></td>
+                        <td className={`px-2 text-right font-mono text-xs ${up ? "text-[#5f7a05]" : "text-red-600"}`}>{up ? "+" : ""}{money(pnl)} <span className="opacity-70">({up ? "+" : ""}{fmt(roe)}%)</span></td>
                         <td className="px-2 text-right"><button onClick={() => closePosition(p.id)} className="text-[#0e1512]/40 hover:text-[#0e1512] p-1"><X size={14} /></button></td>
                       </tr>
                     )
@@ -583,7 +583,7 @@ export default function TradeTerminal() {
         {/* order panel */}
         <aside className="border-l border-black/10 overflow-y-auto no-scrollbar bg-[#060d18] p-3">
           <div className="grid grid-cols-2 gap-2 mb-4 bg-black/5 p-1 rounded-lg">
-            <button onClick={() => setSide("long")} className={`flex items-center justify-center gap-1.5 py-2 rounded-md font-semibold text-sm transition-colors ${side === "long" ? "bg-emerald-500 text-black" : "text-[#0e1512]/60 hover:text-[#0e1512]"}`}><TrendingUp size={16} /> Long</button>
+            <button onClick={() => setSide("long")} className={`flex items-center justify-center gap-1.5 py-2 rounded-md font-semibold text-sm transition-colors ${side === "long" ? "bg-[#CDF60A] text-black" : "text-[#0e1512]/60 hover:text-[#0e1512]"}`}><TrendingUp size={16} /> Long</button>
             <button onClick={() => setSide("short")} className={`flex items-center justify-center gap-1.5 py-2 rounded-md font-semibold text-sm transition-colors ${side === "short" ? "bg-red-500 text-black" : "text-[#0e1512]/60 hover:text-[#0e1512]"}`}><TrendingDown size={16} /> Short</button>
           </div>
 
@@ -594,7 +594,7 @@ export default function TradeTerminal() {
           <label className="text-[11px] text-[#0e1512]/40 uppercase tracking-wider">Collateral</label>
           <div className="mt-1 mb-2 flex items-center rounded-lg bg-black/5 border border-black/10 px-3 focus-within:border-black/25">
             <input type="number" value={collateral} onChange={(e) => setCollateral(e.target.value)} className="flex-1 bg-transparent py-2.5 outline-none font-mono min-w-0" />
-            <button onClick={() => setCollateral(String(Math.floor(balance)))} className="text-[11px] text-emerald-700 hover:text-emerald-700 font-semibold mr-2">MAX</button>
+            <button onClick={() => setCollateral(String(Math.floor(balance)))} className="text-[11px] text-[#5f7a05] hover:text-[#5f7a05] font-semibold mr-2">MAX</button>
             <span className="text-[#0e1512]/40 text-sm">USDG</span>
           </div>
           <div className="grid grid-cols-4 gap-1.5 mb-4">
@@ -603,11 +603,11 @@ export default function TradeTerminal() {
             ))}
           </div>
 
-          <div className="flex items-center justify-between text-xs mb-2"><span className="text-[#0e1512]/40 uppercase tracking-wider">Leverage</span><span className="font-mono font-semibold text-emerald-700 flex items-center gap-1"><Zap size={12} />{leverage}x</span></div>
+          <div className="flex items-center justify-between text-xs mb-2"><span className="text-[#0e1512]/40 uppercase tracking-wider">Leverage</span><span className="font-mono font-semibold text-[#5f7a05] flex items-center gap-1"><Zap size={12} />{leverage}x</span></div>
           <input type="range" min={1} max={20} value={leverage} onChange={(e) => setLeverage(Number(e.target.value))} className="w-full accent-emerald-500 mb-2" />
           <div className="grid grid-cols-6 gap-1 mb-4">
             {LEV_MARKS.map((v) => (
-              <button key={v} onClick={() => setLeverage(v)} className={`text-[11px] py-1 rounded transition-colors ${leverage === v ? "bg-emerald-500 text-black font-semibold" : "bg-black/5 hover:bg-black/10 text-[#0e1512]/60"}`}>{v}x</button>
+              <button key={v} onClick={() => setLeverage(v)} className={`text-[11px] py-1 rounded transition-colors ${leverage === v ? "bg-[#CDF60A] text-black font-semibold" : "bg-black/5 hover:bg-black/10 text-[#0e1512]/60"}`}>{v}x</button>
             ))}
           </div>
 
@@ -615,19 +615,19 @@ export default function TradeTerminal() {
             <Row label="Order value" value={money(notional)} />
             <Row label="Entry price" value={money(mark)} />
             <Row label="Est. liquidation" value={money(estLiq)} valueClass="text-amber-600" />
-            <Row label="Funding / 1h" value={`${funding >= 0 ? "+" : ""}${fmt(funding * 100, 4)}%`} valueClass={funding >= 0 ? "text-emerald-700" : "text-red-600"} />
+            <Row label="Funding / 1h" value={`${funding >= 0 ? "+" : ""}${fmt(funding * 100, 4)}%`} valueClass={funding >= 0 ? "text-[#5f7a05]" : "text-red-600"} />
             <Row label="Taker fee" value={money(fee)} />
           </div>
 
           {tradeErr && <div className="mb-2 text-xs text-red-600 text-center">{tradeErr}</div>}
           {authenticated ? (
             <button onClick={openPosition} disabled={!canOpen}
-              className={`w-full h-11 font-bold text-base rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${side === "long" ? "bg-emerald-500 hover:bg-emerald-400 text-black" : "bg-red-500 hover:bg-red-400 text-black"}`}>
+              className={`w-full h-11 font-bold text-base rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${side === "long" ? "bg-[#CDF60A] hover:bg-[#d9fa3a] text-black" : "bg-red-500 hover:bg-red-400 text-black"}`}>
               {col + fee > balance ? "Insufficient balance" : `Open ${side === "long" ? "Long" : "Short"} · ${leverage}x`}
             </button>
           ) : (
             <button onClick={() => openConnectModal?.()}
-              className="w-full h-11 font-bold text-base rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black transition-colors">
+              className="w-full h-11 font-bold text-base rounded-lg bg-[#CDF60A] hover:bg-[#d9fa3a] text-black transition-colors">
               Connect wallet to trade
             </button>
           )}
@@ -641,7 +641,7 @@ export default function TradeTerminal() {
             <button key={m.key + i} onClick={() => setSelected(m.key)} className="flex items-center gap-2 text-xs hover:opacity-80 transition-opacity">
               <span className="text-[#0e1512]/60">{m.name}</span>
               <span className="font-mono text-[#0e1512]">{money(m.price)}</span>
-              <span className={`font-mono ${m.change24h >= 0 ? "text-emerald-700" : "text-red-600"}`}>{m.change24h >= 0 ? "+" : ""}{fmt(m.change24h, 2)}%</span>
+              <span className={`font-mono ${m.change24h >= 0 ? "text-[#5f7a05]" : "text-red-600"}`}>{m.change24h >= 0 ? "+" : ""}{fmt(m.change24h, 2)}%</span>
             </button>
           ))}
         </div>
@@ -653,7 +653,7 @@ export default function TradeTerminal() {
           <div className="w-full max-w-[420px] rounded-2xl border border-black/10 bg-[#0a121e] p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center"><User size={20} className="text-emerald-700" /></div>
+                <div className="w-11 h-11 rounded-full bg-[#CDF60A]/15 border border-[#CDF60A]/30 flex items-center justify-center"><User size={20} className="text-[#5f7a05]" /></div>
                 <div>
                   <div className="font-semibold">{userLabel(user)}</div>
                   <div className="text-xs text-[#0e1512]/40">{user?.twitter ? "Twitter" : user?.google ? "Google" : user?.wallet ? "wallet" : "Account"}</div>
@@ -664,7 +664,7 @@ export default function TradeTerminal() {
 
             <div className="grid grid-cols-2 gap-3 mb-4">
               <PCard label="Balance" value={money(balance)} />
-              <PCard label="Realized PnL" value={`${realized >= 0 ? "+" : ""}${money(realized)}`} cls={realized > 0 ? "text-emerald-700" : realized < 0 ? "text-red-600" : ""} />
+              <PCard label="Realized PnL" value={`${realized >= 0 ? "+" : ""}${money(realized)}`} cls={realized > 0 ? "text-[#5f7a05]" : realized < 0 ? "text-red-600" : ""} />
               <PCard label="Volume traded" value={money(volume)} />
               <PCard label="Trades" value={String(tradeCount)} />
               <PCard label="Open positions" value={String(positions.length)} />
@@ -673,7 +673,7 @@ export default function TradeTerminal() {
 
             {depositInfo?.enabled && depositInfo.address ? (
               <div className="space-y-3">
-                <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] p-3.5">
+                <div className="rounded-xl border border-[#CDF60A]/40 bg-[#CDF60A]/[0.06] p-3.5">
                   <div className="text-[10px] uppercase tracking-wider text-[#0e1512]/40 mb-1.5">Deposit USDG (Robinhood Chain)</div>
                   <div className="flex items-center gap-2">
                     <code className="text-[11px] font-mono break-all text-[#0e1512]/80 flex-1">{depositInfo.address}</code>
@@ -700,7 +700,7 @@ export default function TradeTerminal() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/[0.07] p-3.5 text-[13px] text-[#0e1512]/60 leading-relaxed">
+              <div className="rounded-xl border border-[#CDF60A]/40 bg-[#CDF60A]/[0.07] p-3.5 text-[13px] text-[#0e1512]/60 leading-relaxed">
                 USDG deposits &amp; withdrawals open at public launch. Until then your balance stays at $0.
               </div>
             )}

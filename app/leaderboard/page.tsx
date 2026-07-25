@@ -25,8 +25,8 @@ export default function Leaderboard() {
             </thead>
           </table>
           <div className="px-6 py-16 text-center">
-            <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center">
-              <Trophy size={24} className="text-emerald-700" />
+            <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[#CDF60A]/10 border border-[#CDF60A]/40 flex items-center justify-center">
+              <Trophy size={24} className="text-[#5f7a05]" />
             </div>
             <div className="font-semibold mb-1.5">Season 1 hasn&apos;t started yet</div>
             <p className="text-[#0e1512]/45 text-sm max-w-[420px] mx-auto leading-relaxed">

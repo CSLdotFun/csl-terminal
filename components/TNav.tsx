@@ -23,7 +23,7 @@ export default function TNav({ active, title, light = false }: { active: string;
         header: "border-b border-black/[0.08] bg-[#fbfaf7]",
         back: "text-[#0e1512]/40 hover:text-[#0e1512]",
         title: "text-[#0e1512]",
-        activeTab: "bg-emerald-500/10 text-emerald-700",
+        activeTab: "bg-[#CDF60A]/10 text-[#5f7a05]",
         tab: "text-[#0e1512]/55 hover:text-[#0e1512] hover:bg-black/[0.04]",
         profile: "bg-black/[0.04] hover:bg-black/[0.07] border border-black/[0.08] text-[#0e1512]",
       }

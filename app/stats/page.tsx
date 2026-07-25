@@ -67,7 +67,7 @@ export default function Stats() {
         <div className="flex items-center gap-3 mb-8 flex-wrap">
           <h1 className="text-3xl font-bold tracking-[-0.02em]">Market stats</h1>
           {source && !err && (
-            <span className={`text-[11px] px-2.5 py-1 rounded-full border ${source === "simulated" ? "border-amber-500/50 text-amber-600 bg-amber-500/[0.06]" : "border-emerald-600/40 text-emerald-700 bg-emerald-500/[0.08]"}`}>
+            <span className={`text-[11px] px-2.5 py-1 rounded-full border ${source === "simulated" ? "border-amber-500/50 text-amber-600 bg-amber-500/[0.06]" : "border-[#a8c908]/50 text-[#5f7a05] bg-[#CDF60A]/[0.08]"}`}>
               {source === "simulated" ? "SIMULATED FEED" : `LIVE · ${source.toUpperCase()}`}
             </span>
           )}
@@ -84,7 +84,7 @@ export default function Stats() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
               <Card label="Listed markets" value={String(markets.length)} />
               <Card label="Basket value (1 of each)" value={money(totalRef)} />
-              <Card label="Top 24h" market={gainer} cls="text-emerald-700"
+              <Card label="Top 24h" market={gainer} cls="text-[#5f7a05]"
                 value={gainer ? `${gainer.name.split("|")[1]?.trim() ?? gainer.name} ${gainer.change24h >= 0 ? "+" : ""}${fmt(gainer.change24h, 2)}%` : "—"} />
               <Card label="Worst 24h" market={loser} cls="text-red-600"
                 value={loser ? `${loser.name.split("|")[1]?.trim() ?? loser.name} ${fmt(loser.change24h, 2)}%` : "—"} />
@@ -104,10 +104,10 @@ export default function Stats() {
                   </thead>
                   <tbody>
                     {[...markets].sort((a, b) => b.price - a.price).map((m, i) => (
-                      <tr key={m.key} className="border-t border-black/[0.05] hover:bg-emerald-500/[0.04] transition-colors group">
+                      <tr key={m.key} className="border-t border-black/[0.05] hover:bg-[#CDF60A]/[0.04] transition-colors group">
                         <td className="px-4 py-3 text-[#0e1512]/30 font-mono text-xs tabular-nums">{i + 1}</td>
                         <td className="px-2 py-3">
-                          <a href="/trade" className="flex items-center gap-3 group-hover:text-emerald-700">
+                          <a href="/trade" className="flex items-center gap-3 group-hover:text-[#5f7a05]">
                             <SkinIcon m={m} className="w-12 h-9" />
                             <span className="flex flex-col leading-tight">
                               <span className="font-medium text-[13px]">{m.name}</span>
@@ -117,11 +117,11 @@ export default function Stats() {
                         </td>
                         <td className="px-3 text-right font-mono text-[13px] tabular-nums">{money(m.price)}</td>
                         <td className="px-3 text-right">
-                          <span className={`inline-flex items-center justify-end gap-1 font-mono text-xs tabular-nums px-1.5 py-0.5 rounded ${m.change24h >= 0 ? "text-emerald-700 bg-emerald-500/[0.10]" : "text-red-600 bg-red-500/[0.08]"}`}>
+                          <span className={`inline-flex items-center justify-end gap-1 font-mono text-xs tabular-nums px-1.5 py-0.5 rounded ${m.change24h >= 0 ? "text-[#5f7a05] bg-[#CDF60A]/[0.10]" : "text-red-600 bg-red-500/[0.08]"}`}>
                             {m.change24h >= 0 ? "▲" : "▼"}{fmt(Math.abs(m.change24h), 2)}%
                           </span>
                         </td>
-                        <td className={`px-4 text-right font-mono text-xs tabular-nums ${m.funding >= 0 ? "text-emerald-700/90" : "text-red-600/90"}`}>{m.funding >= 0 ? "+" : ""}{fmt((m.funding || 0) * 100, 4)}%</td>
+                        <td className={`px-4 text-right font-mono text-xs tabular-nums ${m.funding >= 0 ? "text-[#5f7a05]/90" : "text-red-600/90"}`}>{m.funding >= 0 ? "+" : ""}{fmt((m.funding || 0) * 100, 4)}%</td>
                       </tr>
                     ))}
                   </tbody>
