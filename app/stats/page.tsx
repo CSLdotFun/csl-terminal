@@ -64,7 +64,7 @@ export default function Stats() {
   return (
     <div className="min-h-screen bg-[#faf9f6] text-[#0e1512]">
       <TNav active="stats" title="Stats" light />
-      <SkinSides left="/cs2-karambit-fade-knife.jpg" right="/cs2-m9-bayonet-doppler.jpg" />
+      <SkinSides left="/m4-fire-stats.png" right="/m4-neon-stats.png" opacity={1} size={400} leftRotate={12} rightRotate={-12} fade={false} />
       <main className="relative z-10 max-w-[1100px] mx-auto px-5 py-10">
         <div className="flex items-center gap-3 mb-8 flex-wrap">
           <h1 className="text-3xl font-bold tracking-[-0.02em]">Market stats</h1>
