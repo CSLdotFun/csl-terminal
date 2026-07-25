@@ -25,7 +25,7 @@ export default function HomePage() {
     "/karambit-fade-pink.png",
     "/awp-dragon-lore-flame.png",
     "/butterfly-knife-blue.png",
-    "/awp-emerald-gold.png",
+    "/awp-blue-gold.png",
     "/karambit-red-white.png",
     "/bayonet-green.png",
     "/agent-business-suit.png",
@@ -34,11 +34,11 @@ export default function HomePage() {
     "/awp-light-colored.png",
     "/butterfly-knife-red.png",
     "/ak47-leopard-print.png",
-    "/butterfly-knife-emerald-dark.png",
+    "/butterfly-knife-blue-dark.png",
     "/sport-gloves-purple.png",
     "/agent-fbi-tactical.png",
     "/m4a4-flame-red.png",
-    "/bayonet-emerald-geometric.png",
+    "/bayonet-blue-geometric.png",
   ]
 
   return (
