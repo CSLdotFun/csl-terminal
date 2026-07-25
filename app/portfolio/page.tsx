@@ -61,7 +61,7 @@ export default function Portfolio() {
   return (
     <div className="min-h-screen bg-[#faf9f6] text-[#0e1512]">
       <TNav active="portfolio" light title="Portfolio" />
-      <SkinSides left="/awp-dragon-lore-portfolio.png" right="/awp-asiimov-portfolio.png" />
+      <SkinSides left="/awp-dragon-lore-portfolio.png" right="/awp-asiimov-portfolio.png" opacity={1} leftRotate={-15} rightRotate={-15} fade={false} />
       <main className="relative z-10 max-w-[1100px] mx-auto px-5 py-10">
         <h1 className="text-3xl font-bold tracking-[-0.02em] mb-8">Your account</h1>
 
