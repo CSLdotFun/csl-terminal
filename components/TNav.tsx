@@ -53,6 +53,14 @@ export default function TNav({ active, title, light = false }: { active: string;
               <a key={l.key} href={l.href} className={`text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors ${c.tab}`}>{l.label}</a>
             )
           )}
+          <a
+            href="https://docs.csl.fun"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`text-sm font-medium px-2.5 py-1.5 rounded-lg transition-colors ${c.tab}`}
+          >
+            Documentation
+          </a>
         </nav>
 
         <div className="flex items-center gap-6 text-sm flex-1 justify-end">
