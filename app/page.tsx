@@ -121,7 +121,7 @@ export default function HomePage() {
             <h1 className="mx-auto text-[42px] sm:text-6xl lg:text-[72px] font-bold leading-[1.06] tracking-[-0.035em] max-w-[1080px] text-white [text-shadow:0_2px_30px_rgba(0,0,0,0.9),0_1px_6px_rgba(0,0,0,0.8)]">
               <span className="whitespace-nowrap max-lg:whitespace-normal">The first perpetual exchange</span>
               <br />
-              <span className="whitespace-nowrap max-sm:whitespace-normal">for CS:2 skins. <span className="text-yellow-400">On Robinhood Chain.</span></span>
+              <span className="whitespace-nowrap max-sm:whitespace-normal">for CS:2 skins. <span style={{ color: '#CCFF00' }}>On Robinhood Chain.</span></span>
             </h1>
 
             <p className="mx-auto mt-7 text-white/90 max-w-[620px] text-lg sm:text-xl leading-relaxed text-center [text-shadow:0_1px_14px_rgba(0,0,0,0.9)]">
@@ -268,13 +268,13 @@ export default function HomePage() {
       <section className="max-w-[1200px] mx-auto px-5 py-16">
         <h2 className="text-4xl font-bold text-center mb-16">Experience a new way to trade skins</h2>
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-b from-[#3b3208] to-[#141004] rounded-xl p-6 relative overflow-hidden border border-yellow-400/20 flex flex-col items-center text-center">
+          <div className="bg-gradient-to-b from-[#3b3208] to-[#141004] rounded-xl p-6 relative overflow-hidden border flex flex-col items-center text-center" style={{ borderColor: 'rgba(204,255,0,0.2)' }}>
             <div className="absolute inset-0 opacity-20">
-              <div className="w-32 h-32 bg-yellow-400/20 rounded-full blur-2xl absolute top-12 right-8" />
+              <div className="w-32 h-32 rounded-full blur-2xl absolute top-12 right-8" style={{ backgroundColor: 'rgba(204,255,0,0.2)' }} />
             </div>
             <div className="relative z-10 flex flex-col items-center h-full">
               <div className="h-28 flex items-center justify-center">
-                <img src="/robinhood-feather-yellow.png" alt="Robinhood Chain" className="h-24 w-24 object-contain drop-shadow-[0_0_20px_rgba(250,204,21,0.35)]" />
+                <img src="/robinhood-feather-yellow.png" alt="Robinhood Chain" className="h-24 w-24 object-contain" style={{ filter: 'drop-shadow(0 0 20px rgba(204,255,0,0.35))' }} />
               </div>
               <h3 className="text-lg font-bold text-white drop-shadow-sm h-14 flex items-center justify-center">POWERED BY ROBINHOOD CHAIN</h3>
               <p className="text-white/80 text-sm drop-shadow-sm mt-2">
