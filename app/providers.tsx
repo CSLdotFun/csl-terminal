@@ -52,7 +52,7 @@ cslTheme.colors.modalTextSecondary = "rgba(14,21,18,0.5)"
 cslTheme.colors.modalTextDim = "rgba(14,21,18,0.3)"
 cslTheme.colors.profileForeground = "#ffffff"
 cslTheme.colors.profileAction = "rgba(14,21,18,0.06)"
-cslTheme.colors.profileActionHover = "rgba(14,21,18,0.1)"
+cslTheme.colors.profileActionHover = "rgba(205,246,10,0.25)"
 cslTheme.colors.connectButtonBackground = "#ffffff"
 cslTheme.colors.connectButtonText = "#0e1512"
 cslTheme.colors.generalBorder = "rgba(14,21,18,0.08)"
@@ -61,11 +61,38 @@ cslTheme.colors.closeButton = "rgba(14,21,18,0.5)"
 cslTheme.colors.closeButtonBackground = "rgba(14,21,18,0.06)"
 cslTheme.fonts.body = "inherit"
 
+// Deterministic, on-brand avatar (lime tones only) instead of RainbowKit's
+// default random alien/emoji — same address always renders the same mark.
+function CslAvatar({ address, size }: { address: string; ensImage?: string | null; size: number }) {
+  let h = 0
+  for (let i = 0; i < address.length; i++) h = (h * 31 + address.charCodeAt(i)) >>> 0
+  const hue = h % 360
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 999,
+        background: `linear-gradient(135deg, hsl(${hue}, 70%, 55%), #CDF60A)`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: size * 0.4,
+        fontWeight: 700,
+        color: "#0e1512",
+        fontFamily: "inherit",
+      }}
+    >
+      {address.slice(2, 4).toUpperCase()}
+    </div>
+  )
+}
+
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={cslTheme} modalSize="compact" appInfo={{ appName: "CSL" }} locale="en">
+        <RainbowKitProvider theme={cslTheme} modalSize="compact" appInfo={{ appName: "CSL" }} locale="en" avatar={CslAvatar}>
           {children}
         </RainbowKitProvider>
       </QueryClientProvider>
