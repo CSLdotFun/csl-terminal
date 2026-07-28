@@ -196,6 +196,7 @@ export default function TradeTerminal() {
       setTradeCount(Number(a.trades) || 0)
       setPositions(a.positions.map((p: any) => ({ ...p, openedAt: Number(p.opened_at) })))
       setHistory(a.history.map((t: any) => ({ ...t, closedAt: Number(t.closed_at), leverage: t.leverage })))
+      setOpenOrders(a.openOrders || [])
       try {
         const dr = await fetch(`${API}/api/deposit`, { headers: { "x-wallet": walletAddr }, cache: "no-store" })
         if (dr.ok) setDepositInfo(await dr.json())
@@ -204,7 +205,7 @@ export default function TradeTerminal() {
   }, [authenticated, walletAddr])
 
   useEffect(() => {
-    if (!authenticated) { setBalance(0); setPositions([]); setHistory([]); setRealized(0); setVolume(0); setTradeCount(0); return }
+    if (!authenticated) { setBalance(0); setPositions([]); setHistory([]); setRealized(0); setVolume(0); setTradeCount(0); setOpenOrders([]); return }
     refreshAccount()
     const id = setInterval(refreshAccount, 10000)
     return () => clearInterval(id)
@@ -213,6 +214,12 @@ export default function TradeTerminal() {
   const [side, setSide] = useState<Side>("long")
   const [collateral, setCollateral] = useState("500")
   const [leverage, setLeverage] = useState(10)
+  const [orderType, setOrderType] = useState<"market" | "limit">("market")
+  const [limitPrice, setLimitPrice] = useState("")
+  const [openOrders, setOpenOrders] = useState<any[]>([])
+  const [closeConfirmId, setCloseConfirmId] = useState<string | null>(null)
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null)
+  const [bottomTab, setBottomTab] = useState<"positions" | "orders" | "history">("positions")
 
   const [chartTf, setChartTf] = useState<Tf>("1D")
   const [candles, setCandles] = useState<Candle[]>([])
@@ -419,11 +426,31 @@ export default function TradeTerminal() {
   const units = mark > 0 ? notional / mark : 0
   const estLiq = mark > 0 ? liqPrice(mark, side, leverage) : 0
   const fee = notional * TAKER_FEE
-  const canOpen = col > 0 && col + fee <= balance && mark > 0
+  const limitPx = Math.max(0, Number(limitPrice) || 0)
+  const canOpen = orderType === "market"
+    ? col > 0 && col + fee <= balance && mark > 0
+    : col > 0 && col <= balance && limitPx > 0
 
-  const openPosition = async () => {
+  const submitOrder = async () => {
     if (!authenticated) { openConnectModal?.(); return }
     if (!canOpen || !selMarket) return
+
+    if (orderType === "limit") {
+      if (!serverMode) { setTradeErr("Limit orders need a connected account"); setTimeout(() => setTradeErr(null), 3000); return }
+      try {
+        const res = await fetch(`${API}/api/trade/limit`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-wallet": walletAddr || "" },
+          body: JSON.stringify({ key: selMarket.key, side, collateral: col, leverage, limitPrice: limitPx }),
+        })
+        const d = await res.json()
+        if (d.error) { setTradeErr(tradeErrText(d)); setTimeout(() => setTradeErr(null), 3000) }
+        else setLimitPrice("")
+        await refreshAccount()
+      } catch { setTradeErr("Network error"); setTimeout(() => setTradeErr(null), 3000) }
+      return
+    }
+
     if (serverMode) {
       try {
         const res = await fetch(`${API}/api/trade/open`, {
@@ -566,11 +593,11 @@ export default function TradeTerminal() {
           {/* positions — Hyperliquid style */}
           <div className="h-[200px] shrink-0 overflow-y-auto no-scrollbar bg-[#fbfaf7]">
             <div className="flex items-center gap-5 px-4 py-2.5 border-b border-black/10 sticky top-0 bg-[#fbfaf7] z-10">
-              <span className="text-[13px] font-semibold text-[#0e1512] border-b-2 border-[#CDF60A] pb-2 -mb-[10px]">Positions <span className="text-[#0e1512]/40">{positions.length}</span></span>
-              <span className="text-[13px] font-medium text-[#0e1512]/40">Open Orders</span>
-              <span className="text-[13px] font-medium text-[#0e1512]/40">Trade History</span>
+              <button onClick={() => setBottomTab("positions")} className={`text-[13px] pb-2 -mb-[10px] border-b-2 transition-colors ${bottomTab === "positions" ? "font-semibold text-[#0e1512] border-[#CDF60A]" : "font-medium text-[#0e1512]/40 border-transparent hover:text-[#0e1512]/70"}`}>Positions <span className="text-[#0e1512]/40">{positions.length}</span></button>
+              <button onClick={() => setBottomTab("orders")} className={`text-[13px] pb-2 -mb-[10px] border-b-2 transition-colors ${bottomTab === "orders" ? "font-semibold text-[#0e1512] border-[#CDF60A]" : "font-medium text-[#0e1512]/40 border-transparent hover:text-[#0e1512]/70"}`}>Open Orders <span className="text-[#0e1512]/40">{openOrders.length}</span></button>
+              <button onClick={() => setBottomTab("history")} className={`text-[13px] pb-2 -mb-[10px] border-b-2 transition-colors ${bottomTab === "history" ? "font-semibold text-[#0e1512] border-[#CDF60A]" : "font-medium text-[#0e1512]/40 border-transparent hover:text-[#0e1512]/70"}`}>Trade History</button>
             </div>
-            {positions.length === 0 ? (
+            {bottomTab === "positions" && (positions.length === 0 ? (
               <div className="px-4 py-8 text-center text-[#0e1512]/25 text-sm">No open positions</div>
             ) : (
               <table className="w-full text-sm">
@@ -596,13 +623,72 @@ export default function TradeTerminal() {
                         <td className="px-2 text-right font-mono text-xs">{money(p.entry)}</td>
                         <td className="px-2 text-right font-mono text-xs text-amber-600/80">{money(p.liq)}</td>
                         <td className={`px-2 text-right font-mono text-xs ${up ? "text-[#5f7a05]" : "text-red-600"}`}>{up ? "+" : ""}{money(pnl)} <span className="opacity-70">({up ? "+" : ""}{fmt(roe)}%)</span></td>
-                        <td className="px-2 text-right"><button onClick={() => closePosition(p.id)} className="text-[#0e1512]/40 hover:text-[#0e1512] p-1"><X size={14} /></button></td>
+                        <td className="px-2 text-right"><button onClick={() => setCloseConfirmId(p.id)} className="text-[#0e1512]/40 hover:text-[#0e1512] p-1"><X size={14} /></button></td>
                       </tr>
                     )
                   })}
                 </tbody>
               </table>
-            )}
+            ))}
+
+            {bottomTab === "orders" && (openOrders.length === 0 ? (
+              <div className="px-4 py-8 text-center text-[#0e1512]/25 text-sm">No open orders</div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-[#0e1512]/40 text-[11px] uppercase">
+                    <th className="text-left font-medium px-4 py-2">Market</th>
+                    <th className="text-left font-medium px-2">Side</th>
+                    <th className="text-right font-medium px-2">Size</th>
+                    <th className="text-right font-medium px-2">Limit price</th>
+                    <th className="px-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {openOrders.map((o) => {
+                    const mkt = markets.find((m) => m.key === o.key)
+                    return (
+                      <tr key={o.id} className="border-t border-black/5">
+                        <td className="px-4 py-2"><div className="flex items-center gap-2">{mkt && <Skin mk={mkt.key} img={mkt.image} className="w-8 h-6" />}<span className="text-xs truncate max-w-[130px]">{mkt?.name ?? o.key}</span></div></td>
+                        <td className="px-2"><span className={`text-xs font-semibold ${o.side === "long" ? "text-[#5f7a05]" : "text-red-600"}`}>{o.side === "long" ? "LONG" : "SHORT"} {o.leverage}x</span></td>
+                        <td className="px-2 text-right font-mono text-xs">{money(Number(o.collateral) * Number(o.leverage))}</td>
+                        <td className="px-2 text-right font-mono text-xs">{money(Number(o.limit_price))}</td>
+                        <td className="px-2 text-right"><button onClick={() => setCancelConfirmId(o.id)} className="text-[#0e1512]/40 hover:text-[#0e1512] p-1"><X size={14} /></button></td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            ))}
+
+            {bottomTab === "history" && (history.length === 0 ? (
+              <div className="px-4 py-8 text-center text-[#0e1512]/25 text-sm">No closed trades yet</div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-[#0e1512]/40 text-[11px] uppercase">
+                    <th className="text-left font-medium px-4 py-2">Market</th>
+                    <th className="text-left font-medium px-2">Side</th>
+                    <th className="text-right font-medium px-2">Entry</th>
+                    <th className="text-right font-medium px-2">Exit</th>
+                    <th className="text-right font-medium px-2">PnL</th>
+                    <th className="text-right font-medium px-4">Closed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.slice(0, 30).map((t: any) => (
+                    <tr key={t.id} className="border-t border-black/5">
+                      <td className="px-4 py-2"><div className="flex items-center gap-2">{t.image && <Skin mk={t.key} img={t.image} className="w-8 h-6" />}<span className="text-xs truncate max-w-[130px]">{t.name}</span></div></td>
+                      <td className="px-2"><span className={`text-xs font-semibold ${t.side === "long" ? "text-[#5f7a05]" : "text-red-600"}`}>{t.side === "long" ? "LONG" : "SHORT"} {t.leverage}x</span></td>
+                      <td className="px-2 text-right font-mono text-xs">{money(t.entry)}</td>
+                      <td className="px-2 text-right font-mono text-xs">{money(t.exit)}</td>
+                      <td className={`px-2 text-right font-mono text-xs ${Number(t.pnl) >= 0 ? "text-[#5f7a05]" : "text-red-600"}`}>{Number(t.pnl) >= 0 ? "+" : ""}{money(t.pnl)}</td>
+                      <td className="px-4 text-right text-xs text-[#0e1512]/30">{new Date(t.closedAt).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ))}
           </div>
         </main>
 
@@ -613,8 +699,27 @@ export default function TradeTerminal() {
             <button onClick={() => setSide("short")} className={`flex items-center justify-center gap-1.5 py-2 rounded-md font-semibold text-sm transition-colors ${side === "short" ? "bg-red-500 text-white" : "text-[#0e1512]/60 hover:text-[#0e1512]"}`}><TrendingDown size={16} /> Short</button>
           </div>
 
+          <div className="flex gap-4 mb-3 border-b border-black/10">
+            <button onClick={() => setOrderType("market")} className={`text-xs font-semibold pb-2 -mb-px border-b-2 transition-colors ${orderType === "market" ? "border-[#0e1512] text-[#0e1512]" : "border-transparent text-[#0e1512]/40 hover:text-[#0e1512]/70"}`}>Market</button>
+            <button onClick={() => setOrderType("limit")} className={`text-xs font-semibold pb-2 -mb-px border-b-2 transition-colors ${orderType === "limit" ? "border-[#0e1512] text-[#0e1512]" : "border-transparent text-[#0e1512]/40 hover:text-[#0e1512]/70"}`}>Limit</button>
+          </div>
+
           {authenticated && (
             <div className="flex items-center justify-between text-xs mb-2"><span className="text-[#0e1512]/40">Available</span><span className="font-mono">{money(balance)}</span></div>
+          )}
+
+          {orderType === "limit" && (
+            <>
+              <label className="text-[11px] text-[#0e1512]/40 uppercase tracking-wider">Limit price</label>
+              <div className="mt-1 mb-2 flex items-center rounded-lg bg-black/5 border border-black/10 px-3 focus-within:border-black/25">
+                <span className="text-[#0e1512]/40 text-sm mr-1">$</span>
+                <input type="number" value={limitPrice} onChange={(e) => setLimitPrice(e.target.value)} placeholder={mark ? fmt(mark) : "0.00"} className="flex-1 bg-transparent py-2.5 outline-none font-mono min-w-0" />
+                <button onClick={() => setLimitPrice(fmt(mark))} className="text-[11px] text-[#5f7a05] hover:text-[#5f7a05] font-semibold">MARK</button>
+              </div>
+              <div className="text-[11px] text-[#0e1512]/35 mb-2">
+                Fills when the mark {side === "long" ? "drops to or below" : "rises to or above"} this price. Collateral is reserved until then.
+              </div>
+            </>
           )}
 
           <label className="text-[11px] text-[#0e1512]/40 uppercase tracking-wider">Collateral</label>
@@ -639,17 +744,19 @@ export default function TradeTerminal() {
 
           <div className="space-y-1.5 text-xs mb-4 rounded-lg bg-black/[0.03] border border-black/5 p-3">
             <Row label="Order value" value={money(notional)} />
-            <Row label="Entry price" value={money(mark)} />
-            <Row label="Est. liquidation" value={money(estLiq)} valueClass="text-amber-600" />
+            <Row label={orderType === "limit" ? "Limit price" : "Entry price"} value={money(orderType === "limit" ? limitPx : mark)} />
+            <Row label="Est. liquidation" value={money(mark > 0 ? liqPrice(orderType === "limit" && limitPx > 0 ? limitPx : mark, side, leverage) : 0)} valueClass="text-amber-600" />
             <Row label="Funding / 1h" value={`${funding >= 0 ? "+" : ""}${fmt(funding * 100, 4)}%`} valueClass={funding >= 0 ? "text-[#5f7a05]" : "text-red-600"} />
             <Row label="Taker fee" value={money(fee)} />
           </div>
 
           {tradeErr && <div className="mb-2 text-xs text-red-600 text-center">{tradeErr}</div>}
           {authenticated ? (
-            <button onClick={openPosition} disabled={!canOpen}
+            <button onClick={submitOrder} disabled={!canOpen}
               className={`w-full h-11 font-bold text-base rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors ${side === "long" ? "bg-[#CDF60A] hover:bg-[#d9fa3a] text-[#0e1512]" : "bg-red-500 hover:bg-red-400 text-white"}`}>
-              {col + fee > balance ? "Insufficient balance" : `Open ${side === "long" ? "Long" : "Short"} · ${leverage}x`}
+              {orderType === "limit"
+                ? (col > balance ? "Insufficient balance" : limitPx <= 0 ? "Enter a limit price" : `Place ${side === "long" ? "Long" : "Short"} Limit · ${leverage}x`)
+                : (col + fee > balance ? "Insufficient balance" : `Open ${side === "long" ? "Long" : "Short"} · ${leverage}x`)}
             </button>
           ) : (
             <button onClick={() => openConnectModal?.()}
@@ -673,66 +780,72 @@ export default function TradeTerminal() {
         </div>
       </div>
 
-      {/* profile modal */}
-      {showProfile && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setShowProfile(false)}>
-          <div className="w-full max-w-[420px] rounded-2xl border border-black/10 bg-white p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-[#CDF60A]/15 border border-[#CDF60A]/30 flex items-center justify-center"><User size={20} className="text-[#5f7a05]" /></div>
-                <div>
-                  <div className="font-semibold">{userLabel(user)}</div>
-                  <div className="text-xs text-[#0e1512]/40">{user?.twitter ? "Twitter" : user?.google ? "Google" : user?.wallet ? "wallet" : "Account"}</div>
+      {/* close-position confirmation — Hyperliquid-style: never close on a single click */}
+      {closeConfirmId && (() => {
+        const p = positions.find((x) => x.id === closeConfirmId)
+        if (!p) { setCloseConfirmId(null); return null }
+        const { pnl } = posPnl(p)
+        const up = pnl >= 0
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setCloseConfirmId(null)}>
+            <div className="w-full max-w-[380px] rounded-2xl border border-black/10 bg-white p-6" onClick={(e) => e.stopPropagation()}>
+              <div className="font-semibold text-lg mb-1">Close position?</div>
+              <div className="text-xs text-[#0e1512]/40 mb-4">This settles your PnL immediately at the current mark.</div>
+              <div className="rounded-lg bg-black/[0.03] border border-black/5 p-3 mb-5 space-y-1.5 text-sm">
+                <div className="flex items-center gap-2 mb-1">
+                  <Skin mk={p.key} img={p.image} className="w-9 h-7" />
+                  <span className="font-medium text-sm">{p.name}</span>
+                  <span className={`text-xs font-semibold ml-auto ${p.side === "long" ? "text-[#5f7a05]" : "text-red-600"}`}>{p.side === "long" ? "LONG" : "SHORT"} {p.leverage}x</span>
                 </div>
+                <Row label="Size" value={money(p.notional)} />
+                <Row label="Entry" value={money(p.entry)} />
+                <Row label="PnL" value={`${up ? "+" : ""}${money(pnl)}`} valueClass={up ? "text-[#5f7a05]" : "text-red-600"} />
               </div>
-              <button onClick={() => setShowProfile(false)} className="text-[#0e1512]/40 hover:text-[#0e1512] p-1"><X size={18} /></button>
+              <div className="flex gap-2">
+                <button onClick={() => setCloseConfirmId(null)} className="flex-1 h-10 rounded-lg bg-black/5 hover:bg-black/10 text-sm font-semibold">Cancel</button>
+                <button onClick={() => { closePosition(p.id); setCloseConfirmId(null) }} className="flex-1 h-10 rounded-lg bg-red-500 hover:bg-red-400 text-white text-sm font-semibold">Confirm Close</button>
+              </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <PCard label="Balance" value={money(balance)} />
-              <PCard label="Realized PnL" value={`${realized >= 0 ? "+" : ""}${money(realized)}`} cls={realized > 0 ? "text-[#5f7a05]" : realized < 0 ? "text-red-600" : ""} />
-              <PCard label="Volume traded" value={money(volume)} />
-              <PCard label="Trades" value={String(tradeCount)} />
-              <PCard label="Open positions" value={String(positions.length)} />
-              <PCard label="Unrealized PnL" value={(() => { let u = 0; for (const p of positions) { const { pnl } = posPnl(p); u += Math.max(-p.collateral, pnl) } return `${u >= 0 ? "+" : ""}${money(u)}` })()} />
-            </div>
-
-            {depositInfo?.enabled && depositInfo.address ? (
-              <div className="space-y-3">
-                <div className="rounded-xl border border-[#CDF60A]/40 bg-[#CDF60A]/[0.06] p-3.5">
-                  <div className="text-[10px] uppercase tracking-wider text-[#0e1512]/40 mb-1.5">Deposit USDG (Robinhood Chain)</div>
-                  <div className="flex items-center gap-2">
-                    <code className="text-[11px] font-mono break-all text-[#0e1512]/80 flex-1">{depositInfo.address}</code>
-                    <button onClick={() => navigator.clipboard.writeText(depositInfo.address!)} className="text-[11px] px-2.5 py-1 rounded bg-black/10 hover:bg-black/15 shrink-0">Copy</button>
-                  </div>
-                  <div className="text-[11px] text-[#0e1512]/35 mt-1.5">USDG only, Robinhood Chain. Max ${depositInfo.maxPerUser} per account in beta. Credits within ~1 min.</div>
-                </div>
-                <div className="rounded-xl border border-black/10 bg-black/[0.03] p-3.5">
-                  <div className="text-[10px] uppercase tracking-wider text-[#0e1512]/40 mb-2">Withdraw USDG</div>
-                  <input value={wAmt} onChange={(e) => setWAmt(e.target.value)} placeholder="Amount" type="number" className="w-full mb-2 bg-black/5 border border-black/10 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-black/25" />
-                  <input value={wAddr} onChange={(e) => setWAddr(e.target.value)} placeholder="Robinhood Chain address" className="w-full mb-2 bg-black/5 border border-black/10 rounded-lg px-3 py-2 text-xs font-mono outline-none focus:border-black/25" />
-                  <button
-                    onClick={async () => {
-                      try {
-                                        const r = await postWithdraw(API, token!, wAmt, wAddr)
-                        setWMsg(r.ok ? (r.status === "sent" ? "Sent on-chain ✓" : "Requested — processing") : withdrawErrText(r))
-                        if (r.ok) { setWAmt(""); setWAddr(""); refreshAccount() }
-                      } catch { setWMsg("Network error") }
-                      setTimeout(() => setWMsg(null), 4000)
-                    }}
-                    className="w-full h-9 rounded-lg bg-black/10 hover:bg-black/15 text-sm font-semibold"
-                  >Withdraw</button>
-                  {wMsg && <div className="text-[11px] text-[#0e1512]/60 mt-2 text-center">{wMsg}</div>}
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-xl border border-[#CDF60A]/40 bg-[#CDF60A]/[0.07] p-3.5 text-[13px] text-[#0e1512]/60 leading-relaxed">
-                USDG deposits &amp; withdrawals open at public launch. Until then your balance stays at $0.
-              </div>
-            )}
           </div>
-        </div>
-      )}
+        )
+      })()}
+
+      {/* cancel-limit-order confirmation */}
+      {cancelConfirmId && (() => {
+        const o = openOrders.find((x) => x.id === cancelConfirmId)
+        if (!o) { setCancelConfirmId(null); return null }
+        const mkt = markets.find((m) => m.key === o.key)
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => setCancelConfirmId(null)}>
+            <div className="w-full max-w-[380px] rounded-2xl border border-black/10 bg-white p-6" onClick={(e) => e.stopPropagation()}>
+              <div className="font-semibold text-lg mb-1">Cancel order?</div>
+              <div className="text-xs text-[#0e1512]/40 mb-4">Reserved collateral is returned to your balance.</div>
+              <div className="rounded-lg bg-black/[0.03] border border-black/5 p-3 mb-5 space-y-1.5 text-sm">
+                <div className="flex items-center gap-2 mb-1">
+                  {mkt && <Skin mk={mkt.key} img={mkt.image} className="w-9 h-7" />}
+                  <span className="font-medium text-sm">{mkt?.name ?? o.key}</span>
+                  <span className={`text-xs font-semibold ml-auto ${o.side === "long" ? "text-[#5f7a05]" : "text-red-600"}`}>{o.side === "long" ? "LONG" : "SHORT"} {o.leverage}x</span>
+                </div>
+                <Row label="Reserved collateral" value={money(Number(o.collateral))} />
+                <Row label="Limit price" value={money(Number(o.limit_price))} />
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => setCancelConfirmId(null)} className="flex-1 h-10 rounded-lg bg-black/5 hover:bg-black/10 text-sm font-semibold">Keep order</button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await fetch(`${API}/api/trade/limit/${o.id}`, { method: "DELETE", headers: { "x-wallet": walletAddr || "" } })
+                      await refreshAccount()
+                    } catch {}
+                    setCancelConfirmId(null)
+                  }}
+                  className="flex-1 h-10 rounded-lg bg-red-500 hover:bg-red-400 text-white text-sm font-semibold"
+                >Confirm Cancel</button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
@@ -751,14 +864,6 @@ function MiniStat({ label, value, cls = "" }: { label: string; value: string; cl
 }
 function Row({ label, value, valueClass = "" }: { label: string; value: string; valueClass?: string }) {
   return <div className="flex items-center justify-between"><span className="text-[#0e1512]/40">{label}</span><span className={`font-mono ${valueClass}`}>{value}</span></div>
-}
-async function postWithdraw(api: string, token: string, amount: string, address: string) {
-  const res = await fetch(`${api}/api/withdraw`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-wallet": walletAddr || "" },
-    body: JSON.stringify({ amount, address }),
-  })
-  return res.json()
 }
 
 /* the wear this market's price is pinned to — spelled out under the title */
