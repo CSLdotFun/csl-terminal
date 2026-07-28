@@ -7,8 +7,8 @@ import { ArrowLeft, TrendingUp, TrendingDown, Zap, X, User } from "lucide-react"
 import CandleChart, { type Candle } from "./CandleChart"
 import { useAccount } from "wagmi"
 import { useConnectModal } from "@rainbow-me/rainbowkit"
-import { ICONS } from "./icons"
 import { loadAccount, saveAccount, type ClosedTrade } from "@/lib/account"
+import Skin from "@/components/Skin"
 
 const API = process.env.NEXT_PUBLIC_API_URL || ""
 
@@ -127,15 +127,6 @@ function genRecent(key: string, tfSec: number, count: number, endPrice: number, 
 /* Icon priority: the real Steam CDN image (served by the API once warmed) →
    whatever we bundle locally. Any load error falls back a step, so a Steam
    hiccup can never leave an empty box. */
-function Skin({ mk, img, icon, className = "w-11 h-8" }: { mk: string; img: string; icon?: string | null; className?: string }) {
-  const [src, setSrc] = useState(icon || ICONS[mk] || `/${img}`)
-  useEffect(() => { setSrc(icon || ICONS[mk] || `/${img}`) }, [mk, img, icon])
-  return (
-    <div className={`${className} rounded bg-black/5 flex items-center justify-center shrink-0 overflow-hidden`}>
-      <img src={src} alt="" className="max-w-full max-h-full object-contain" onError={() => { if (src !== `/${img}`) setSrc(`/${img}`) }} />
-    </div>
-  )
-}
 
 // Pre-launch access gate (sha-256 of the access password; removed at public launch)
 const GATE_HASH = "e8802414ead697f6edac02462a10db5bfa0878a107d18cd4319879ba962c3325"

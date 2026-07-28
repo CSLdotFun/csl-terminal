@@ -3,14 +3,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useAccount } from "wagmi"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
-import { Copy, Check, Camera, TrendingUp, TrendingDown } from "lucide-react"
+import { Copy, Check, Camera, TrendingUp, TrendingDown, Flame, Snowflake } from "lucide-react"
 import TNav from "@/components/TNav"
 import WalletDeposit from "@/components/WalletDeposit"
+import PnLChart, { PnlPoint } from "@/components/PnLChart"
+import Skin from "@/components/Skin"
 
 const API = process.env.NEXT_PUBLIC_API_URL || ""
 
 type Position = { id: string; key: string; name: string; image: string; side: string; leverage: number; entry: number; collateral: number }
-type Trade = { id: string; name: string; image: string; side: string; leverage: number; entry: number; exit: number; pnl: number; reason: string; closedAt: number }
+type Trade = { id: string; key: string; name: string; image: string; side: string; leverage: number; entry: number; exit: number; pnl: number; reason: string; closedAt: number }
 
 export default function MyProfile() {
   const { address: walletAddr, isConnected } = useAccount()
@@ -107,6 +109,27 @@ export default function MyProfile() {
 
   const wins = history.filter((t) => Number(t.pnl) > 0).length
   const winRate = history.length ? Math.round((wins / history.length) * 100) : null
+
+  // cumulative realized PnL curve, oldest -> newest, for the chart
+  const pnlPoints: PnlPoint[] = useMemo(() => {
+    const asc = [...history].sort((a, b) => a.closedAt - b.closedAt)
+    let running = 0
+    return asc.map((t) => { running += Number(t.pnl) || 0; return { t: t.closedAt, pnl: running } })
+  }, [history])
+
+  // extra "moments" — best/worst trade, avg leverage, current streak
+  const bestTrade = useMemo(() => history.length ? history.reduce((a, b) => (Number(b.pnl) > Number(a.pnl) ? b : a)) : null, [history])
+  const worstTrade = useMemo(() => history.length ? history.reduce((a, b) => (Number(b.pnl) < Number(a.pnl) ? b : a)) : null, [history])
+  const avgLeverage = useMemo(() => history.length ? history.reduce((s, t) => s + Number(t.leverage || 0), 0) / history.length : 0, [history])
+  const streak = useMemo(() => {
+    const desc = [...history].sort((a, b) => b.closedAt - a.closedAt)
+    if (!desc.length) return { n: 0, win: true }
+    const win = Number(desc[0].pnl) >= 0
+    let n = 0
+    for (const t of desc) { if ((Number(t.pnl) >= 0) === win) n++; else break }
+    return { n, win }
+  }, [history])
+
   const wallet = walletAddr
   const label = wallet ? wallet.slice(0, 6) + "…" + wallet.slice(-4) : "Account"
   const via = "Wallet"
@@ -118,58 +141,94 @@ export default function MyProfile() {
       <TNav active="" title="My Profile" light />
 
       {!authenticated ? (
-        <div className="max-w-lg mx-auto mt-28 text-center">
+        <div className="max-w-lg mx-auto mt-28 text-center px-4">
           <div className="text-xl font-bold">Connect your wallet to see your profile</div>
           <div className="text-sm text-[#0e1512]/40 mt-2">Balance, positions, history and deposits live here.</div>
           <div className="mt-6 flex justify-center"><ConnectButton /></div>
         </div>
       ) : (
-        <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-          {/* identity */}
-          <div className="flex items-center gap-5 rounded-2xl border border-black/10 bg-[#fbfaf7] p-6">
-            <div className="relative group">
+        <div className="w-full">
+          {/* identity — full width, hairline divider instead of a boxed card */}
+          <div className="flex items-center gap-5 px-4 md:px-8 py-6 border-b border-black/10">
+            <div className="relative group shrink-0">
               {shownAvatar ? (
-                <img src={shownAvatar} alt="" className="w-20 h-20 rounded-full object-cover border border-black/15" />
+                <img src={shownAvatar} alt="" className="w-16 h-16 rounded-full object-cover border border-black/15" />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-[#CDF60A]/15 border border-[#CDF60A]/30 flex items-center justify-center text-2xl font-bold text-[#5f7a05]">
+                <div className="w-16 h-16 rounded-full bg-[#CDF60A]/15 border border-[#CDF60A]/30 flex items-center justify-center text-xl font-bold text-[#5f7a05]">
                   {label.replace("@", "").slice(0, 1).toUpperCase()}
                 </div>
               )}
               <button onClick={pickAvatar} title="Change avatar"
-                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-black/10 hover:bg-white/20 border border-black/15 flex items-center justify-center backdrop-blur">
-                <Camera size={13} />
+                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-black/10 hover:bg-black/20 border border-black/15 flex items-center justify-center">
+                <Camera size={12} />
               </button>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onAvatarFile} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xl font-bold truncate">{label}</div>
+              <div className="text-lg font-bold truncate">{label}</div>
               <div className="text-xs text-[#0e1512]/40 mt-0.5">Signed in with {via}</div>
-              {wallet && (
-                <div className="text-xs font-mono text-[#0e1512]/35 mt-1 truncate">{wallet}</div>
-              )}
-              {avatar && (
-                <button onClick={resetAvatar} className="text-[11px] text-[#0e1512]/30 hover:text-[#0e1512]/60 mt-1">Reset avatar</button>
-              )}
+              {wallet && <div className="text-xs font-mono text-[#0e1512]/35 mt-0.5 truncate">{wallet}</div>}
+              {avatar && <button onClick={resetAvatar} className="text-[11px] text-[#0e1512]/30 hover:text-[#0e1512]/60 mt-1">Reset avatar</button>}
             </div>
-            <div className="text-right">
-              <div className="text-[11px] uppercase tracking-wider text-[#0e1512]/35">Balance</div>
-              <div className="text-2xl font-bold font-mono">${fmt(balance)}</div>
+            <div className="text-right shrink-0">
+              <div className="text-[11px] uppercase tracking-wider text-[#0e1512]/35">Account Value</div>
+              <div className="text-2xl font-bold font-mono">${fmt(balance + unrealized)}</div>
             </div>
           </div>
 
-          {/* stats */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {/* PnL chart — full bleed, no card, no border box */}
+          <div className="px-4 md:px-8 py-6 border-b border-black/10">
+            <PnLChart points={pnlPoints} unrealized={unrealized} />
+          </div>
+
+          {/* stat strip — hairline separators between cells, no boxes */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 border-b border-black/10">
             <Stat label="Realized PnL" value={`${realized >= 0 ? "+" : ""}$${fmt(realized)}`} tone={realized >= 0 ? "up" : "down"} />
             <Stat label="Unrealized PnL" value={`${unrealized >= 0 ? "+" : ""}$${fmt(unrealized)}`} tone={unrealized >= 0 ? "up" : "down"} />
             <Stat label="Volume Traded" value={`$${fmt(volume)}`} />
             <Stat label="Trades" value={String(trades)} />
-            <Stat label="Open Positions" value={String(positions.length)} />
             <Stat label="Win Rate" value={winRate === null ? "—" : `${winRate}%`} tone={winRate !== null && winRate >= 50 ? "up" : undefined} />
+            <Stat label="Avg Leverage" value={history.length ? `${avgLeverage.toFixed(1)}x` : "—"} />
+            <Stat
+              label={streak.n > 0 ? (streak.win ? "Win Streak" : "Loss Streak") : "Streak"}
+              value={streak.n > 0 ? String(streak.n) : "—"}
+              tone={streak.n > 0 ? (streak.win ? "up" : "down") : undefined}
+              icon={streak.n > 0 ? (streak.win ? <Flame size={12} className="text-[#5f7a05]" /> : <Snowflake size={12} className="text-red-600" />) : undefined}
+            />
+            <Stat label="Open Positions" value={String(positions.length)} />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          {/* best / worst trade — the kind of thing that makes a profile feel alive */}
+          {(bestTrade || worstTrade) && (
+            <div className="grid md:grid-cols-2 border-b border-black/10">
+              {bestTrade && (
+                <div className="px-4 md:px-8 py-5 flex items-center gap-3 md:border-r border-black/10">
+                  <div className="text-[11px] uppercase tracking-wider text-[#0e1512]/35 w-24 shrink-0">Best Trade</div>
+                  {bestTrade.image && <Skin mk={bestTrade.key} img={bestTrade.image} className="w-9 h-7" />}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium truncate">{bestTrade.name}</div>
+                    <div className="text-xs text-[#0e1512]/40">{bestTrade.side === "short" ? "Short" : "Long"} · {bestTrade.leverage}x</div>
+                  </div>
+                  <div className="font-mono font-semibold text-[#5f7a05]">+${fmt(Number(bestTrade.pnl))}</div>
+                </div>
+              )}
+              {worstTrade && (
+                <div className="px-4 md:px-8 py-5 flex items-center gap-3">
+                  <div className="text-[11px] uppercase tracking-wider text-[#0e1512]/35 w-24 shrink-0">Worst Trade</div>
+                  {worstTrade.image && <Skin mk={worstTrade.key} img={worstTrade.image} className="w-9 h-7" />}
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium truncate">{worstTrade.name}</div>
+                    <div className="text-xs text-[#0e1512]/40">{worstTrade.side === "short" ? "Short" : "Long"} · {worstTrade.leverage}x</div>
+                  </div>
+                  <div className="font-mono font-semibold text-red-600">${fmt(Number(worstTrade.pnl))}</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="grid md:grid-cols-2 border-b border-black/10">
             {/* deposit */}
-            <div className="rounded-2xl border border-[#CDF60A]/20 bg-[#CDF60A]/[0.04] p-5">
+            <div className="px-4 md:px-8 py-6 bg-[#CDF60A]/[0.04] md:border-r border-black/10">
               <div className="text-[11px] uppercase tracking-wider text-[#5f7a05]/70">Deposit USDG (Robinhood Chain)</div>
               {depositInfo?.enabled && depositInfo.address ? (
                 <>
@@ -201,7 +260,7 @@ export default function MyProfile() {
             </div>
 
             {/* withdraw */}
-            <div className="rounded-2xl border border-black/10 bg-[#fbfaf7] p-5">
+            <div className="px-4 md:px-8 py-6">
               <div className="text-[11px] uppercase tracking-wider text-[#0e1512]/35">Withdraw USDG</div>
               <input value={wAmt} onChange={(e) => setWAmt(e.target.value)} inputMode="decimal" placeholder="Amount"
                 className="mt-2 w-full bg-black/5 border border-black/10 rounded-lg px-3 py-2.5 text-sm font-mono outline-none focus:border-black/25" />
@@ -223,19 +282,19 @@ export default function MyProfile() {
             </div>
           </div>
 
-          {/* history */}
-          <div className="rounded-2xl border border-black/10 bg-[#fbfaf7] overflow-hidden">
-            <div className="px-5 py-3.5 text-[11px] uppercase tracking-wider text-[#0e1512]/35 border-b border-black/10">Trade History</div>
+          {/* history — full width table, no card wrapper */}
+          <div className="pb-10">
+            <div className="px-4 md:px-8 py-3.5 text-[11px] uppercase tracking-wider text-[#0e1512]/35 border-b border-black/10">Trade History</div>
             {history.length === 0 ? (
-              <div className="px-5 py-10 text-center text-[#0e1512]/30 text-sm">No closed trades yet — open one in the <a href="/trade" className="text-[#5f7a05] hover:underline">terminal</a>.</div>
+              <div className="px-4 md:px-8 py-10 text-center text-[#0e1512]/30 text-sm">No closed trades yet — open one in the <a href="/trade" className="text-[#5f7a05] hover:underline">terminal</a>.</div>
             ) : (
               <table className="w-full text-sm">
                 <tbody>
-                  {history.slice(0, 12).map((t) => (
+                  {history.slice(0, 20).map((t) => (
                     <tr key={t.id} className="border-b border-black/5 last:border-0">
-                      <td className="px-5 py-3">
+                      <td className="px-4 md:px-8 py-3">
                         <div className="flex items-center gap-2.5">
-                          {t.image && <img src={t.image} alt="" className="w-9 h-7 object-contain" />}
+                          {t.image && <Skin mk={t.key} img={t.image} className="w-9 h-7" />}
                           <span className="font-medium">{t.name}</span>
                         </div>
                       </td>
@@ -249,7 +308,7 @@ export default function MyProfile() {
                       <td className={`px-3 py-3 font-mono font-semibold ${Number(t.pnl) >= 0 ? "text-[#5f7a05]" : "text-red-600"}`}>
                         {Number(t.pnl) >= 0 ? "+" : ""}${fmt(t.pnl)}
                       </td>
-                      <td className="px-5 py-3 text-right text-xs text-[#0e1512]/30">{new Date(t.closedAt).toLocaleDateString()}</td>
+                      <td className="px-4 md:px-8 py-3 text-right text-xs text-[#0e1512]/30">{new Date(t.closedAt).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -262,10 +321,10 @@ export default function MyProfile() {
   )
 }
 
-function Stat({ label, value, tone }: { label: string; value: string; tone?: "up" | "down" }) {
+function Stat({ label, value, tone, icon }: { label: string; value: string; tone?: "up" | "down"; icon?: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-black/10 bg-[#fbfaf7] px-4 py-3.5">
-      <div className="text-[10px] uppercase tracking-wider text-[#0e1512]/35">{label}</div>
+    <div className="px-4 md:px-6 py-4 border-r border-b md:border-b-0 border-black/10 [&:nth-child(2n)]:border-r-0 md:[&:nth-child(2n)]:border-r lg:[&:nth-child(8n)]:border-r-0">
+      <div className="text-[10px] uppercase tracking-wider text-[#0e1512]/35 flex items-center gap-1">{icon}{label}</div>
       <div className={`text-lg font-bold font-mono mt-1 ${tone === "up" ? "text-[#5f7a05]" : tone === "down" ? "text-red-600" : ""}`}>{value}</div>
     </div>
   )
@@ -284,4 +343,3 @@ function wErr(d: any): string {
     default: return "Request failed"
   }
 }
-
