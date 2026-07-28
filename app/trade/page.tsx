@@ -194,8 +194,23 @@ export default function TradeTerminal() {
       setRealized(Number(a.realized) || 0)
       setVolume(Number(a.volume) || 0)
       setTradeCount(Number(a.trades) || 0)
-      setPositions(a.positions.map((p: any) => ({ ...p, openedAt: Number(p.opened_at) })))
-      setHistory(a.history.map((t: any) => ({ ...t, closedAt: Number(t.closed_at), leverage: t.leverage })))
+      const newPositions = a.positions.map((p: any) => ({ ...p, openedAt: Number(p.opened_at) }))
+      const newHistory = a.history.map((t: any) => ({ ...t, closedAt: Number(t.closed_at), leverage: t.leverage }))
+
+      // any position that was here last refresh but isn't now, and that WE
+      // didn't just manually close ourselves, must have been closed by the
+      // backend (liquidation, or a filled stop) — surface it as a toast
+      const newIds = new Set(newPositions.map((p: Position) => p.id))
+      for (const old of prevPositionsRef.current) {
+        if (newIds.has(old.id)) continue
+        if (manualCloseRef.current.has(old.id)) { manualCloseRef.current.delete(old.id); continue }
+        const t = newHistory.find((h: any) => h.id === old.id)
+        if (t) showToast({ name: old.name, image: old.image, reason: t.reason === "liquidation" ? "Liquidated" : "Closed", exit: t.exit, pnl: t.pnl })
+      }
+      prevPositionsRef.current = newPositions
+
+      setPositions(newPositions)
+      setHistory(newHistory)
       setOpenOrders(a.openOrders || [])
       try {
         const dr = await fetch(`${API}/api/deposit`, { headers: { "x-wallet": walletAddr }, cache: "no-store" })
@@ -220,6 +235,9 @@ export default function TradeTerminal() {
   const [closeConfirmId, setCloseConfirmId] = useState<string | null>(null)
   const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null)
   const [bottomTab, setBottomTab] = useState<"positions" | "orders" | "history">("positions")
+  const [toasts, setToasts] = useState<{ id: string; name: string; image: string; reason: string; exit: number; pnl: number }[]>([])
+  const prevPositionsRef = useRef<Position[]>([])
+  const manualCloseRef = useRef<Set<string>>(new Set())
 
   const [chartTf, setChartTf] = useState<Tf>("1D")
   const [candles, setCandles] = useState<Candle[]>([])
@@ -472,14 +490,24 @@ export default function TradeTerminal() {
     setBalance((b) => b - col - fee); setPositions((p) => [pos, ...p])
     setVolume((v) => v + notional); setTradeCount((c) => c + 1)
   }
+  const showToast = (t: { name: string; image: string; reason: string; exit: number; pnl: number }) => {
+    const id = Math.random().toString(36).slice(2)
+    setToasts((ts) => [...ts, { id, ...t }])
+    setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), 6000)
+  }
+
   const closePosition = async (id: string) => {
     if (serverMode) {
+      const p = positions.find((x) => x.id === id)
+      manualCloseRef.current.add(id)
       try {
-        await fetch(`${API}/api/trade/close`, {
+        const res = await fetch(`${API}/api/trade/close`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "x-wallet": walletAddr || "" },
           body: JSON.stringify({ id }),
         })
+        const d = await res.json()
+        if (d.ok && p) showToast({ name: p.name, image: p.image, reason: "Closed", exit: d.exit, pnl: d.pnl })
         await refreshAccount()
       } catch {}
       return
@@ -493,6 +521,7 @@ export default function TradeTerminal() {
         setBalance((b) => b + Math.max(0, p.collateral + pnl))
         setRealized((r) => r + clamped)
         setHistory((h) => [{ id: p.id, key: p.key, name: p.name, image: p.image, side: p.side, leverage: p.leverage, entry: p.entry, exit: px, pnl: clamped, closedAt: Date.now() }, ...h].slice(0, 100))
+        showToast({ name: p.name, image: p.image, reason: "Closed", exit: px, pnl: clamped })
       }
       return prev.filter((x) => x.id !== id)
     })
@@ -533,6 +562,24 @@ export default function TradeTerminal() {
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-[#faf9f6] text-[#0e1512]">
       <TNav active="trade" light title="Terminal" />
+
+      {/* close/liquidation toasts */}
+      <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[60] flex flex-col gap-2 items-center pointer-events-none">
+        {toasts.map((t) => {
+          const up = t.pnl >= 0
+          return (
+            <div key={t.id} className="pointer-events-auto flex items-center gap-3 bg-white border border-black/10 shadow-lg rounded-xl px-4 py-2.5 animate-in fade-in slide-in-from-top-2">
+              {t.image && <img src={t.image} alt="" className="w-9 h-7 object-contain shrink-0" />}
+              <div className="text-sm">
+                <span className="font-semibold">{t.name}</span>
+                <span className="text-[#0e1512]/40"> — {t.reason === "Liquidated" ? "liquidated" : "closed"}</span>
+              </div>
+              <div className="text-xs font-mono text-[#0e1512]/50">@ {money(t.exit)}</div>
+              <div className={`text-sm font-mono font-semibold ${up ? "text-[#5f7a05]" : "text-red-600"}`}>{up ? "+" : ""}{money(t.pnl)}</div>
+            </div>
+          )
+        })}
+      </div>
 
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[300px_1fr_324px]">
         {/* markets */}
@@ -617,7 +664,7 @@ export default function TradeTerminal() {
                     const { pnl } = posPnl(p); const roe = (pnl / p.collateral) * 100; const up = pnl >= 0
                     return (
                       <tr key={p.id} className="border-t border-black/5">
-                        <td className="px-4 py-2"><div className="flex items-center gap-2"><Skin mk={p.key} img={p.image} className="w-8 h-6" /><span className="text-xs truncate max-w-[130px]">{p.name}</span></div></td>
+                        <td className="px-4 py-2"><button onClick={() => setSelected(p.key)} className="flex items-center gap-2 hover:opacity-70 transition-opacity text-left"><Skin mk={p.key} img={p.image} className="w-8 h-6" /><span className="text-xs truncate max-w-[130px] underline decoration-black/15 hover:decoration-black/40">{p.name}</span></button></td>
                         <td className="px-2"><span className={`text-xs font-semibold ${p.side === "long" ? "text-[#5f7a05]" : "text-red-600"}`}>{p.side === "long" ? "LONG" : "SHORT"} {p.leverage}x</span></td>
                         <td className="px-2 text-right font-mono text-xs">{money(p.notional)}</td>
                         <td className="px-2 text-right font-mono text-xs">{money(p.entry)}</td>
@@ -649,7 +696,7 @@ export default function TradeTerminal() {
                     const mkt = markets.find((m) => m.key === o.key)
                     return (
                       <tr key={o.id} className="border-t border-black/5">
-                        <td className="px-4 py-2"><div className="flex items-center gap-2">{mkt && <Skin mk={mkt.key} img={mkt.image} className="w-8 h-6" />}<span className="text-xs truncate max-w-[130px]">{mkt?.name ?? o.key}</span></div></td>
+                        <td className="px-4 py-2"><button onClick={() => setSelected(o.key)} className="flex items-center gap-2 hover:opacity-70 transition-opacity text-left">{mkt && <Skin mk={mkt.key} img={mkt.image} className="w-8 h-6" />}<span className="text-xs truncate max-w-[130px] underline decoration-black/15 hover:decoration-black/40">{mkt?.name ?? o.key}</span></button></td>
                         <td className="px-2"><span className={`text-xs font-semibold ${o.side === "long" ? "text-[#5f7a05]" : "text-red-600"}`}>{o.side === "long" ? "LONG" : "SHORT"} {o.leverage}x</span></td>
                         <td className="px-2 text-right font-mono text-xs">{money(Number(o.collateral) * Number(o.leverage))}</td>
                         <td className="px-2 text-right font-mono text-xs">{money(Number(o.limit_price))}</td>
@@ -678,7 +725,7 @@ export default function TradeTerminal() {
                 <tbody>
                   {history.slice(0, 30).map((t: any) => (
                     <tr key={t.id} className="border-t border-black/5">
-                      <td className="px-4 py-2"><div className="flex items-center gap-2">{t.image && <Skin mk={t.key} img={t.image} className="w-8 h-6" />}<span className="text-xs truncate max-w-[130px]">{t.name}</span></div></td>
+                      <td className="px-4 py-2"><button onClick={() => setSelected(t.key)} className="flex items-center gap-2 hover:opacity-70 transition-opacity text-left">{t.image && <Skin mk={t.key} img={t.image} className="w-8 h-6" />}<span className="text-xs truncate max-w-[130px] underline decoration-black/15 hover:decoration-black/40">{t.name}</span></button></td>
                       <td className="px-2"><span className={`text-xs font-semibold ${t.side === "long" ? "text-[#5f7a05]" : "text-red-600"}`}>{t.side === "long" ? "LONG" : "SHORT"} {t.leverage}x</span></td>
                       <td className="px-2 text-right font-mono text-xs">{money(t.entry)}</td>
                       <td className="px-2 text-right font-mono text-xs">{money(t.exit)}</td>
