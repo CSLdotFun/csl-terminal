@@ -77,6 +77,15 @@ export default function WalletDeposit({ address, onDone }: { address: string; on
         </button>
       </div>
 
+      <div className="flex items-center justify-between mt-1.5 px-0.5">
+        <span className="text-[11px] text-white/35">
+          Wallet balance: <span className="font-mono text-white/55">{isConnected ? held.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—"} USDG</span>
+        </span>
+        {isConnected && held > 0 && (
+          <button onClick={() => setAmount(String(held))} className="text-[11px] text-emerald-400 hover:text-emerald-300">Max</button>
+        )}
+      </div>
+
       <div className="flex gap-1.5 mt-2">
         {[25, 50, 100, 250].map((v) => (
           <button key={v} onClick={() => setAmount(String(v))}
