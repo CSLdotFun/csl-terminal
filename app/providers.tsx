@@ -3,8 +3,8 @@
 import "@rainbow-me/rainbowkit/styles.css"
 import { RainbowKitProvider, lightTheme, connectorsForWallets } from "@rainbow-me/rainbowkit"
 import {
-  phantomWallet, rainbowWallet, coinbaseWallet, metaMaskWallet,
-  trustWallet, walletConnectWallet, injectedWallet,
+  metaMaskWallet, walletConnectWallet, rainbowWallet,
+  trustWallet, injectedWallet, coinbaseWallet,
 } from "@rainbow-me/rainbowkit/wallets"
 import { WagmiProvider, createConfig, http } from "wagmi"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -12,16 +12,17 @@ import { robinhoodChain } from "@/lib/chain"
 
 const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID || "csl_walletconnect"
 
-// Wallet list mirrors the standard RainbowKit picker: Phantom + the popular
-// wallets. (Phantom supports EVM chains too, so it's fine on Robinhood Chain.)
+// EVM wallets only — this is Robinhood Chain (Arbitrum Orbit L2). No Phantom /
+// Solana wallets. MetaMask and Robinhood Wallet (injected) lead, then the rest.
 const connectors = connectorsForWallets(
   [
     {
-      groupName: "Popular",
-      wallets: [
-        phantomWallet, rainbowWallet, coinbaseWallet, metaMaskWallet,
-        trustWallet, walletConnectWallet, injectedWallet,
-      ],
+      groupName: "Recommended",
+      wallets: [metaMaskWallet, injectedWallet, walletConnectWallet],
+    },
+    {
+      groupName: "More",
+      wallets: [rainbowWallet, trustWallet, coinbaseWallet],
     },
   ],
   { appName: "CSL", projectId }
@@ -36,20 +37,35 @@ const config = createConfig({
 
 const queryClient = new QueryClient()
 
-// Light modal (matches the light site) with the "What is a wallet?" side panel.
-// modalSize="wide" is what renders the two-column layout with the explainer.
+// CSL-branded LIGHT modal — matches the terminal's own cream/lime look,
+// not RainbowKit's dark default.
 const cslTheme = lightTheme({
   accentColor: "#CDF60A",
-  accentColorForeground: "#1a1e05",
+  accentColorForeground: "#0e1512",
   borderRadius: "large",
   overlayBlur: "small",
 })
+cslTheme.colors.modalBackground = "#faf9f6"
+cslTheme.colors.modalBorder = "rgba(14,21,18,0.08)"
+cslTheme.colors.modalText = "#0e1512"
+cslTheme.colors.modalTextSecondary = "rgba(14,21,18,0.5)"
+cslTheme.colors.modalTextDim = "rgba(14,21,18,0.3)"
+cslTheme.colors.profileForeground = "#ffffff"
+cslTheme.colors.profileAction = "rgba(14,21,18,0.06)"
+cslTheme.colors.profileActionHover = "rgba(14,21,18,0.1)"
+cslTheme.colors.connectButtonBackground = "#ffffff"
+cslTheme.colors.connectButtonText = "#0e1512"
+cslTheme.colors.generalBorder = "rgba(14,21,18,0.08)"
+cslTheme.colors.menuItemBackground = "rgba(14,21,18,0.04)"
+cslTheme.colors.closeButton = "rgba(14,21,18,0.5)"
+cslTheme.colors.closeButtonBackground = "rgba(14,21,18,0.06)"
+cslTheme.fonts.body = "inherit"
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={cslTheme} modalSize="wide" appInfo={{ appName: "CSL" }}>
+        <RainbowKitProvider theme={cslTheme} modalSize="compact" appInfo={{ appName: "CSL" }} locale="en">
           {children}
         </RainbowKitProvider>
       </QueryClientProvider>
