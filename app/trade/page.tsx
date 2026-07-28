@@ -287,16 +287,39 @@ export default function TradeTerminal() {
   const funding = selMarket?.funding ?? 0
   const tfSec = TF_CFG[chartTf].sec
 
-  // (re)load chart history on market / timeframe change. ALL timeframes are
-  // anchored to the same real Steam history so nothing looks detached from the
-  // live price. Daily/weekly render as a line; intraday interpolates the most
-  // recent real days into a smooth line ending exactly on the live price.
+  // (re)load chart history on market / timeframe change. Sub-day timeframes
+  // (15m/1H/4H) use REAL intraday ticks from the backend's 5-min ring buffer
+  // (~26h deep) — previously they just re-showed the same daily bucketing as
+  // 1D, so switching timeframe did nothing. 1D/1W still use daily Steam
+  // history, rebased onto the live mark.
   useEffect(() => {
     let cancelled = false
     const endPrice = priceMap.current.get(selected) ?? SEED_MARKETS.find((m) => m.key === selected)?.seed ?? 100
 
     if (API) {
       ;(async () => {
+        if (chartTf === "15m" || chartTf === "1H" || chartTf === "4H") {
+          try {
+            const res = await fetch(`${API}/api/intraday/${selected}?tf=${chartTf}`, { cache: "no-store" })
+            if (res.ok) {
+              const d = await res.json()
+              if (!cancelled && d.candles?.length >= 3) {
+                const live = priceMap.current.get(selected) ?? endPrice
+                const arr: Candle[] = d.candles.map((c: Candle) => ({ ...c }))
+                const last = arr[arr.length - 1]
+                last.close = r(live); last.high = Math.max(last.high, last.close); last.low = Math.min(last.low, last.close)
+                candlesRef.current = arr
+                seriesKey.current = selected + chartTf
+                setCandles(arr)
+                setLiveCandle(null)
+                return
+              }
+            }
+          } catch {}
+          if (cancelled) return
+          // not enough intraday ticks yet (just deployed / just listed) — fall
+          // through to the same recent-window synthesis used below
+        }
         try {
           const res = await fetch(`${API}/api/history/${selected}`, { cache: "no-store" })
           if (res.ok) {
@@ -324,9 +347,7 @@ export default function TradeTerminal() {
                 const last = daily[daily.length - 1]
                 last.close = r(live); last.high = Math.max(last.high, last.close); last.low = Math.min(last.low, last.close)
               }
-              // aggregate the daily series to the chosen timeframe's bucket. Steam
-              // only gives us one price per day, so sub-day timeframes just show
-              // the same daily points — honest, and the dates always line up.
+              // aggregate the daily series to the chosen timeframe's bucket.
               const bkt = chartTf === "1W" ? 604800 : 86400
               const byB = new Map<number, Candle>()
               for (const c of daily) {
