@@ -69,8 +69,11 @@ export default function CandleChart({ candles, live, mode = "candles" }: { candl
           rightOffset: 1,
           barSpacing: 6,
           minBarSpacing: 0.5,
-          fixLeftEdge: true,
-          fixRightEdge: true,
+          // was fixLeftEdge/fixRightEdge: true — that PINNED the visible range
+          // to whatever was initially loaded, so panning left to see earlier
+          // history was physically blocked even when the data existed.
+          fixLeftEdge: false,
+          fixRightEdge: false,
         },
         crosshair: {
           mode: LWC.CrosshairMode.Normal,
@@ -127,8 +130,8 @@ export default function CandleChart({ candles, live, mode = "candles" }: { candl
 
 function fitView(chart: any, n: number) {
   chart.priceScale("right").applyOptions({ autoScale: true })
-  // Always stretch the full series edge-to-edge so the chart fills the whole
-  // width — no empty gap on the left, no big pad on the right. fixLeftEdge /
-  // fixRightEdge (set on the timeScale) keep it pinned when the user pans.
+  // Fit the full series edge-to-edge on load. fixLeftEdge/fixRightEdge are
+  // now false, so this is just the INITIAL view — the user can still pan
+  // left/right and zoom out past it to see more history.
   chart.timeScale().fitContent()
 }
