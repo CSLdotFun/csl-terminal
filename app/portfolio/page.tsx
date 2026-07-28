@@ -1,26 +1,55 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useAccount } from "wagmi"
+import { ConnectButton } from "@rainbow-me/rainbowkit"
 import TNav from "@/components/TNav"
 import SkinSides from "@/components/SkinSides"
-import { loadAccount, type Account } from "@/lib/account"
 
 const API = process.env.NEXT_PUBLIC_API_URL || ""
-const fmt = (n: number, d = 2) => n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d })
+const fmt = (n: number, d = 2) => (Number(n) || 0).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d })
 const money = (n: number) => `$${fmt(n)}`
 
+type Position = { id: string; key: string; name: string; side: string; leverage: number; entry: number; collateral: number; notional: number; units: number; opened_at?: number }
+type Trade = { id: string; name: string; side: string; leverage: number; entry: number; exit: number; pnl: number; closed_at: number }
+type Account = { balance: number; realized: number; volume: number; trades: number; positions: Position[]; history: Trade[] }
+
+const emptyAccount: Account = { balance: 0, realized: 0, volume: 0, trades: 0, positions: [], history: [] }
+
 export default function Portfolio() {
+  const { address: walletAddr, isConnected } = useAccount()
   const [acct, setAcct] = useState<Account | null>(null)
   const [marks, setMarks] = useState<Map<string, number>>(new Map())
   const [funds, setFunds] = useState<Map<string, number>>(new Map())
   const [now, setNow] = useState(Date.now())
 
+  // real account, from the backend — same source as My Profile
+  const refresh = useCallback(async () => {
+    if (!API || !isConnected || !walletAddr) { setAcct(emptyAccount); return }
+    try {
+      const res = await fetch(`${API}/api/account`, { headers: { "x-wallet": walletAddr }, cache: "no-store" })
+      if (!res.ok) return
+      const a = await res.json()
+      setAcct({
+        balance: Number(a.balance) || 0,
+        realized: Number(a.realized) || 0,
+        volume: Number(a.volume) || 0,
+        trades: Number(a.trades) || 0,
+        positions: a.positions || [],
+        history: a.history || [],
+      })
+    } catch {}
+  }, [isConnected, walletAddr])
+
   useEffect(() => {
-    setAcct(loadAccount())
-    const onFocus = () => setAcct(loadAccount())
-    window.addEventListener("focus", onFocus)
+    refresh()
+    const id = setInterval(refresh, 10000)
+    return () => clearInterval(id)
+  }, [refresh])
+
+  useEffect(() => {
     const clock = setInterval(() => setNow(Date.now()), 1000)
-    return () => { window.removeEventListener("focus", onFocus); clearInterval(clock) }
+    return () => clearInterval(clock)
   }, [])
 
   // live marks for uPnL
@@ -33,8 +62,9 @@ export default function Portfolio() {
         if (!res.ok) return
         const d = await res.json()
         if (stop) return
-        setMarks(new Map(d.markets.map((m: any) => [m.key, m.price])))
-        setFunds(new Map(d.markets.map((m: any) => [m.key, m.funding || 0])))
+        const list = d.markets || d
+        setMarks(new Map(list.map((m: any) => [m.key, m.price])))
+        setFunds(new Map(list.map((m: any) => [m.key, m.funding || 0])))
       } catch {}
     }
     pull()
@@ -47,16 +77,28 @@ export default function Portfolio() {
     let u = 0
     for (const p of acct.positions) {
       const px = marks.get(p.key) ?? p.entry
-      const pricePnl = p.units * (px - p.entry) * (p.side === "long" ? 1 : -1)
-      const rate = funds.get(p.key) ?? 0
-      const hours = (now - p.openedAt) / 3_600_000
-      u += Math.max(-p.collateral, pricePnl - p.notional * rate * hours * (p.side === "long" ? 1 : -1))
+      const dir = p.side === "short" ? -1 : 1
+      const pricePnl = ((px - p.entry) / p.entry) * dir * p.leverage * Number(p.collateral)
+      u += Math.max(-p.collateral, pricePnl)
     }
     return u
-  }, [acct, marks, funds, now])
+  }, [acct, marks])
+
+  if (!isConnected) {
+    return (
+      <div className="min-h-screen bg-[#faf9f6] text-[#0e1512]">
+        <TNav active="portfolio" light title="Portfolio" />
+        <div className="max-w-lg mx-auto mt-28 text-center px-4">
+          <div className="text-xl font-bold">Connect your wallet to see your portfolio</div>
+          <div className="text-sm text-[#0e1512]/40 mt-2">Balance, positions and trade history live here.</div>
+          <div className="mt-6 flex justify-center"><ConnectButton /></div>
+        </div>
+      </div>
+    )
+  }
 
   if (!acct) return <div className="min-h-screen bg-[#faf9f6]" />
-  const equity = acct.balance + acct.positions.reduce((s, p) => s + p.collateral, 0) + upnl
+  const equity = acct.balance + acct.positions.reduce((s, p) => s + Number(p.collateral), 0) + upnl
 
   return (
     <div className="min-h-screen bg-[#faf9f6] text-[#0e1512]">
@@ -74,11 +116,6 @@ export default function Portfolio() {
           <Card label="Trades" value={String(acct.trades)} />
         </div>
 
-        <div className="rounded-xl border border-[#CDF60A]/40 bg-[#CDF60A]/[0.06] p-4 text-sm text-[#0e1512]/60 leading-relaxed mb-10">
-          USDG deposits &amp; withdrawals open at public launch — balances stay at $0 until then.
-          Positions and history below reflect your real actions in the terminal.
-        </div>
-
         <h2 className="text-lg font-semibold mb-3">Open positions ({acct.positions.length})</h2>
         <div className="rounded-xl border border-black/10 bg-black/[0.02] overflow-hidden mb-10">
           {acct.positions.length === 0 ? (
@@ -93,11 +130,12 @@ export default function Portfolio() {
               <tbody>
                 {acct.positions.map((p) => {
                   const px = marks.get(p.key) ?? p.entry
-                  const pnl = Math.max(-p.collateral, p.units * (px - p.entry) * (p.side === "long" ? 1 : -1))
+                  const dir = p.side === "short" ? -1 : 1
+                  const pnl = Math.max(-p.collateral, ((px - p.entry) / p.entry) * dir * p.leverage * Number(p.collateral))
                   return (
                     <tr key={p.id} className="border-t border-black/5">
                       <td className="px-4 py-2.5 text-xs">{p.name}</td>
-                      <td className={`px-2 text-xs font-semibold ${p.side === "long" ? "text-[#5f7a05]" : "text-red-600"}`}>{p.side.toUpperCase()} {p.leverage}x</td>
+                      <td className={`px-2 text-xs font-semibold ${p.side === "short" ? "text-red-600" : "text-[#5f7a05]"}`}>{p.side.toUpperCase()} {p.leverage}x</td>
                       <td className="px-2 text-right font-mono text-xs">{money(p.notional)}</td>
                       <td className="px-2 text-right font-mono text-xs">{money(p.entry)}</td>
                       <td className="px-2 text-right font-mono text-xs">{money(px)}</td>
@@ -125,11 +163,11 @@ export default function Portfolio() {
                 {acct.history.slice(0, 30).map((t) => (
                   <tr key={t.id} className="border-t border-black/5">
                     <td className="px-4 py-2.5 text-xs">{t.name}</td>
-                    <td className={`px-2 text-xs font-semibold ${t.side === "long" ? "text-[#5f7a05]" : "text-red-600"}`}>{t.side.toUpperCase()} {t.leverage}x</td>
+                    <td className={`px-2 text-xs font-semibold ${t.side === "short" ? "text-red-600" : "text-[#5f7a05]"}`}>{t.side.toUpperCase()} {t.leverage}x</td>
                     <td className="px-2 text-right font-mono text-xs">{money(t.entry)}</td>
                     <td className="px-2 text-right font-mono text-xs">{money(t.exit)}</td>
-                    <td className={`px-2 text-right font-mono text-xs ${t.pnl >= 0 ? "text-[#5f7a05]" : "text-red-600"}`}>{t.pnl >= 0 ? "+" : ""}{money(t.pnl)}</td>
-                    <td className="px-4 text-right font-mono text-xs text-[#0e1512]/40">{new Date(t.closedAt).toLocaleString()}</td>
+                    <td className={`px-2 text-right font-mono text-xs ${Number(t.pnl) >= 0 ? "text-[#5f7a05]" : "text-red-600"}`}>{Number(t.pnl) >= 0 ? "+" : ""}{money(t.pnl)}</td>
+                    <td className="px-4 text-right font-mono text-xs text-[#0e1512]/40">{new Date(Number(t.closed_at)).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
