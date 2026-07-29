@@ -31,6 +31,9 @@ export default function MyProfile() {
   const [wAmt, setWAmt] = useState("")
   const [wAddr, setWAddr] = useState("")
   const [wMsg, setWMsg] = useState<string | null>(null)
+  const [wConfirm, setWConfirm] = useState(false)
+  const [wBusy, setWBusy] = useState(false)
+  const [wToast, setWToast] = useState<{ status: string; amount: string; address: string; sig?: string } | null>(null)
 
   // avatar: custom (stored locally) wins, else the Twitter picture, else a monogram
   const [avatar, setAvatar] = useState<string | null>(null)
@@ -266,18 +269,11 @@ export default function MyProfile() {
                 className="mt-2 w-full bg-black/5 border border-black/10 rounded-lg px-3 py-2.5 text-sm font-mono outline-none focus:border-black/25" />
               <input value={wAddr} onChange={(e) => setWAddr(e.target.value)} placeholder="Robinhood Chain address (0x…)"
                 className="mt-2 w-full bg-black/5 border border-black/10 rounded-lg px-3 py-2.5 text-sm font-mono outline-none focus:border-black/25" />
-              <button onClick={async () => {
-                setWMsg(null)
-                try {
-                  const res = await fetch(`${API}/api/withdraw`, {
-                    method: "POST", headers: { "Content-Type": "application/json", "x-wallet": walletAddr || "" },
-                    body: JSON.stringify({ amount: Number(wAmt), address: wAddr.trim() }),
-                  })
-                  const d = await res.json()
-                  setWMsg(res.ok ? (d.status === "sent" ? "Sent on-chain ✓" : "Requested — processing") : wErr(d))
-                  if (res.ok) { setWAmt(""); refresh() }
-                } catch { setWMsg("Request failed") }
-              }} className="mt-3 w-full text-sm font-semibold px-4 py-2.5 rounded-lg bg-black/10 hover:bg-black/15 border border-black/10 transition-colors">Withdraw</button>
+              <button
+                onClick={() => { if (Number(wAmt) > 0 && wAddr.trim()) setWConfirm(true) }}
+                disabled={!(Number(wAmt) > 0 && wAddr.trim())}
+                className="mt-3 w-full text-sm font-semibold px-4 py-2.5 rounded-lg bg-black/10 hover:bg-black/15 disabled:opacity-40 disabled:cursor-not-allowed border border-black/10 transition-colors"
+              >Withdraw</button>
               {wMsg && <div className="text-xs text-[#0e1512]/50 mt-2">{wMsg}</div>}
             </div>
           </div>
@@ -317,8 +313,69 @@ export default function MyProfile() {
           </div>
         </div>
       )}
+
+      {/* withdraw confirmation — never submit on a single click */}
+      {wConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={() => !wBusy && setWConfirm(false)}>
+          <div className="w-full max-w-[380px] rounded-2xl border border-black/10 bg-white p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="font-semibold text-lg mb-1">Withdraw USDG?</div>
+            <div className="text-xs text-[#0e1512]/40 mb-4">Double-check the address — this cannot be reversed once sent.</div>
+            <div className="rounded-lg bg-black/[0.03] border border-black/5 p-3 mb-5 space-y-2 text-sm">
+              <Row2 label="Amount" value={`$${fmt(Number(wAmt))}`} />
+              <div>
+                <div className="text-[#0e1512]/40 text-xs mb-1">To address</div>
+                <div className="font-mono text-xs break-all">{wAddr.trim()}</div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button disabled={wBusy} onClick={() => setWConfirm(false)} className="flex-1 h-10 rounded-lg bg-black/5 hover:bg-black/10 disabled:opacity-40 text-sm font-semibold">Cancel</button>
+              <button
+                disabled={wBusy}
+                onClick={async () => {
+                  setWBusy(true); setWMsg(null)
+                  try {
+                    const res = await fetch(`${API}/api/withdraw`, {
+                      method: "POST", headers: { "Content-Type": "application/json", "x-wallet": walletAddr || "" },
+                      body: JSON.stringify({ amount: Number(wAmt), address: wAddr.trim() }),
+                    })
+                    const d = await res.json()
+                    if (res.ok) {
+                      setWToast({ status: d.status === "sent" ? "sent" : "pending", amount: wAmt, address: wAddr.trim(), sig: d.sig })
+                      setWAmt(""); setWAddr(""); refresh()
+                    } else {
+                      setWMsg(wErr(d))
+                    }
+                  } catch { setWMsg("Request failed") }
+                  setWBusy(false); setWConfirm(false)
+                }}
+                className="flex-1 h-10 rounded-lg bg-[#CDF60A] hover:bg-[#d9fa3a] disabled:opacity-60 text-[#0e1512] text-sm font-semibold"
+              >{wBusy ? "Confirming…" : "Confirm Withdraw"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* withdraw result toast */}
+      {wToast && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[60] pointer-events-none">
+          <div className="pointer-events-auto flex items-center gap-3 bg-white border border-black/10 shadow-lg rounded-xl px-4 py-2.5">
+            <div className="text-sm">
+              <span className="font-semibold text-[#5f7a05]">{wToast.status === "sent" ? "Withdrawal sent ✓" : "Withdrawal requested"}</span>
+              <span className="text-[#0e1512]/40"> — ${fmt(Number(wToast.amount))} to {wToast.address.slice(0, 6)}…{wToast.address.slice(-4)}</span>
+            </div>
+            {wToast.sig && (
+              <a href={`https://robinhoodchain.blockscout.com/tx/${wToast.sig}`} target="_blank" rel="noopener noreferrer" className="text-xs text-[#5f7a05] hover:underline shrink-0">View tx</a>
+            )}
+            <button onClick={() => setWToast(null)} className="text-[#0e1512]/30 hover:text-[#0e1512]/60 shrink-0 ml-1">✕</button>
+          </div>
+        </div>
+      )}
     </div>
   )
+}
+
+function Row2({ label, value }: { label: string; value: string }) {
+  return <div className="flex items-center justify-between"><span className="text-[#0e1512]/40">{label}</span><span className="font-mono font-semibold">{value}</span></div>
 }
 
 function Stat({ label, value, tone, icon }: { label: string; value: string; tone?: "up" | "down"; icon?: React.ReactNode }) {
