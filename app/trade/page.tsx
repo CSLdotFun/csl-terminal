@@ -196,7 +196,7 @@ export default function TradeTerminal() {
         if (newIds.has(old.id)) continue
         if (manualCloseRef.current.has(old.id)) { manualCloseRef.current.delete(old.id); continue }
         const t = newHistory.find((h: any) => h.id === old.id)
-        if (t) showToast({ name: old.name, image: old.image, reason: t.reason === "liquidation" ? "Liquidated" : "Closed", exit: t.exit, pnl: t.pnl })
+        if (t) showToast({ key: old.key, name: old.name, image: old.image, reason: t.reason === "liquidation" ? "Liquidated" : "Closed", exit: t.exit, pnl: t.pnl })
       }
       prevPositionsRef.current = newPositions
 
@@ -226,7 +226,7 @@ export default function TradeTerminal() {
   const [closeConfirmId, setCloseConfirmId] = useState<string | null>(null)
   const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null)
   const [bottomTab, setBottomTab] = useState<"positions" | "orders" | "history">("positions")
-  const [toasts, setToasts] = useState<{ id: string; name: string; image: string; reason: string; exit: number; pnl: number }[]>([])
+  const [toasts, setToasts] = useState<{ id: string; key: string; name: string; image: string; reason: string; exit: number; pnl: number }[]>([])
   const prevPositionsRef = useRef<Position[]>([])
   const manualCloseRef = useRef<Set<string>>(new Set())
 
@@ -481,7 +481,7 @@ export default function TradeTerminal() {
     setBalance((b) => b - col - fee); setPositions((p) => [pos, ...p])
     setVolume((v) => v + notional); setTradeCount((c) => c + 1)
   }
-  const showToast = (t: { name: string; image: string; reason: string; exit: number; pnl: number }) => {
+  const showToast = (t: { key: string; name: string; image: string; reason: string; exit: number; pnl: number }) => {
     const id = Math.random().toString(36).slice(2)
     setToasts((ts) => [...ts, { id, ...t }])
     setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), 6000)
@@ -498,7 +498,7 @@ export default function TradeTerminal() {
           body: JSON.stringify({ id }),
         })
         const d = await res.json()
-        if (d.ok && p) showToast({ name: p.name, image: p.image, reason: "Closed", exit: d.exit, pnl: d.pnl })
+        if (d.ok && p) showToast({ key: p.key, name: p.name, image: p.image, reason: "Closed", exit: d.exit, pnl: d.pnl })
         await refreshAccount()
       } catch {}
       return
@@ -512,7 +512,7 @@ export default function TradeTerminal() {
         setBalance((b) => b + Math.max(0, p.collateral + pnl))
         setRealized((r) => r + clamped)
         setHistory((h) => [{ id: p.id, key: p.key, name: p.name, image: p.image, side: p.side, leverage: p.leverage, entry: p.entry, exit: px, pnl: clamped, closedAt: Date.now() }, ...h].slice(0, 100))
-        showToast({ name: p.name, image: p.image, reason: "Closed", exit: px, pnl: clamped })
+        showToast({ key: p.key, name: p.name, image: p.image, reason: "Closed", exit: px, pnl: clamped })
       }
       return prev.filter((x) => x.id !== id)
     })
@@ -560,7 +560,7 @@ export default function TradeTerminal() {
           const up = t.pnl >= 0
           return (
             <div key={t.id} className="pointer-events-auto flex items-center gap-3 bg-white border border-black/10 shadow-lg rounded-xl px-4 py-2.5 animate-in fade-in slide-in-from-top-2">
-              {t.image && <img src={t.image} alt="" className="w-9 h-7 object-contain shrink-0" />}
+              {t.image && <Skin mk={t.key} img={t.image} className="w-9 h-7 shrink-0" />}
               <div className="text-sm">
                 <span className="font-semibold">{t.name}</span>
                 <span className="text-[#0e1512]/40"> — {t.reason === "Liquidated" ? "liquidated" : "closed"}</span>
