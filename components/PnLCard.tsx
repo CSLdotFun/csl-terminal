@@ -67,12 +67,16 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
       )}
 
       {/* content */}
-      <div style={{ position: "relative", zIndex: 1, padding: "32px 36px", height: "100%", display: "flex", flexDirection: "column" }}>
-        {/* logo — measured directly off the reference (191x109 at 2.15x scale = ~50px tall on this 680-wide card), NOT the old 34px */}
-        <img src="/csl-logo-white.png" alt="CSL" style={{ height: 50, width: "auto", objectFit: "contain" }} />
+      <div style={{ position: "relative", zIndex: 1, padding: "32px 36px", height: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+        {/* logo — absolute positioned at the exact coordinates measured off the reference (29px left, 24px top, ~89x51) so it can never drift regardless of flex behavior */}
+        <img
+          src="/csl-logo-white.png"
+          alt="CSL"
+          style={{ position: "absolute", left: 29, top: 24, height: 51, width: "auto", objectFit: "contain", display: "block" }}
+        />
 
         {/* skin name + side badge */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 40 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 96 }}>
           <span style={{ fontSize: 20, color: "rgba(255,255,255,0.85)" }}>{name}</span>
           <span
             style={{
