@@ -179,14 +179,21 @@ export default function TradeTerminal() {
   const [wMsg, setWMsg] = useState<string | null>(null)
   const [tradeErr, setTradeErr] = useState<string | null>(null)
 
+  const refreshSeq = useRef(0)
   const refreshAccount = useCallback(async () => {
     if (!API || !authenticated || !walletAddr) return
+    const mySeq = ++refreshSeq.current
     try {
       const token = await getToken()
-      if (!token) { setServerMode(false); return }
+      if (!token) { if (refreshSeq.current === mySeq) setServerMode(false); return }
       const res = await fetch(`${API}/api/account`, { headers: authHeader(token), cache: "no-store" })
-      if (!res.ok) { setServerMode(false); return }
+      if (!res.ok) { if (refreshSeq.current === mySeq) setServerMode(false); return }
       const a = await res.json()
+      // a newer refreshAccount call has started since this one began — its
+      // response is guaranteed to be at least as fresh, so discard THIS one
+      // rather than let an out-of-order response overwrite newer state
+      // (this is exactly what made a just-liquidated position "flicker back")
+      if (refreshSeq.current !== mySeq) return
       setServerMode(true)
       setBalance(Number(a.balance) || 0)
       setRealized(Number(a.realized) || 0)
@@ -212,7 +219,7 @@ export default function TradeTerminal() {
       setOpenOrders(a.openOrders || [])
       try {
         const dr = await fetch(`${API}/api/deposit`, { headers: authHeader(token), cache: "no-store" })
-        if (dr.ok) setDepositInfo(await dr.json())
+        if (dr.ok && refreshSeq.current === mySeq) setDepositInfo(await dr.json())
       } catch {}
     } catch { setServerMode(false) }
   }, [authenticated, walletAddr, getToken, authHeader])
