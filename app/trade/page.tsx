@@ -224,6 +224,7 @@ export default function TradeTerminal() {
   }, [authenticated, refreshAccount])
 
   const [side, setSide] = useState<Side>("long")
+  const [collateralAsset, setCollateralAsset] = useState<"USDG" | "CSL">("USDG")
   const [collateral, setCollateral] = useState("500")
   const [leverage, setLeverage] = useState(10)
   const [orderType, setOrderType] = useState<"market" | "limit">("market")
@@ -747,6 +748,14 @@ export default function TradeTerminal() {
 
         {/* order panel */}
         <aside className="border-l border-black/10 overflow-y-auto no-scrollbar bg-white p-3">
+          <div className="grid grid-cols-2 gap-2 mb-2 bg-black/5 p-1 rounded-lg">
+            <button onClick={() => setCollateralAsset("USDG")} className={`flex items-center justify-center gap-1.5 py-1.5 rounded-md font-semibold text-xs transition-colors ${collateralAsset === "USDG" ? "bg-white shadow-sm text-[#0e1512]" : "text-[#0e1512]/50 hover:text-[#0e1512]/80"}`}>USDG</button>
+            <button
+              onClick={() => { setTradeErr("$CSL collateral is coming soon"); setTimeout(() => setTradeErr(null), 2500) }}
+              title="Coming soon — $CSL collateral will feed the burn"
+              className="flex items-center justify-center gap-1.5 py-1.5 rounded-md font-semibold text-xs text-[#0e1512]/30 cursor-not-allowed"
+            >$CSL <span className="text-[9px] bg-black/10 text-[#0e1512]/40 px-1.5 py-0.5 rounded-full font-medium normal-case">Soon</span></button>
+          </div>
           <div className="grid grid-cols-2 gap-2 mb-4 bg-black/5 p-1 rounded-lg">
             <button onClick={() => setSide("long")} className={`flex items-center justify-center gap-1.5 py-2 rounded-md font-semibold text-sm transition-colors ${side === "long" ? "bg-[#CDF60A] text-[#0e1512]" : "text-[#0e1512]/60 hover:text-[#0e1512]"}`}><TrendingUp size={16} /> Long</button>
             <button onClick={() => setSide("short")} className={`flex items-center justify-center gap-1.5 py-2 rounded-md font-semibold text-sm transition-colors ${side === "short" ? "bg-red-500 text-white" : "text-[#0e1512]/60 hover:text-[#0e1512]"}`}><TrendingDown size={16} /> Short</button>
