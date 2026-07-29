@@ -130,8 +130,17 @@ export default function CandleChart({ candles, live, mode = "candles" }: { candl
 
 function fitView(chart: any, n: number) {
   chart.priceScale("right").applyOptions({ autoScale: true })
-  // Fit the full series edge-to-edge on load. fixLeftEdge/fixRightEdge are
-  // now false, so this is just the INITIAL view — the user can still pan
-  // left/right and zoom out past it to see more history.
-  chart.timeScale().fitContent()
+  // Previously always called fitContent(), which squeezes however many bars
+  // exist into the same screen width — a 5-bar 1D chart and a 100-bar 15m
+  // chart ended up looking the same width, just with wildly different bar
+  // spacing. Show a consistent recent WINDOW instead: the last ~60 bars at a
+  // readable width. Shorter datasets still fit fully (nothing to scroll to
+  // yet); longer ones show a real recent slice, and panning left reaches
+  // the rest — exactly what fixLeftEdge/fixRightEdge:false was for.
+  const WINDOW = 60
+  if (n <= WINDOW) {
+    chart.timeScale().fitContent()
+  } else {
+    chart.timeScale().setVisibleLogicalRange({ from: n - WINDOW, to: n - 1 })
+  }
 }
