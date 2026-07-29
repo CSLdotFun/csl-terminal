@@ -35,44 +35,41 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
         color: "#ffffff",
       }}
     >
-      {/* decorative wave-line pattern, radiating from the top-right */}
-      <svg width="680" height="540" style={{ position: "absolute", inset: 0, opacity: 0.35 }} viewBox="0 0 680 540">
-        {Array.from({ length: 14 }).map((_, i) => (
+      {/* decorative wave-line pattern, radiating from the top-right — more visible, matching reference */}
+      <svg width="680" height="540" style={{ position: "absolute", inset: 0, opacity: 0.55 }} viewBox="0 0 680 540">
+        {Array.from({ length: 16 }).map((_, i) => (
           <path
             key={i}
-            d={`M ${340 + i * 34} -40 Q ${680 + i * 10} ${180 + i * 8} ${340 + i * 34} 580`}
-            stroke="#2a3530"
+            d={`M ${300 + i * 30} -60 Q ${700 + i * 12} ${170 + i * 10} ${300 + i * 30} 600`}
+            stroke="#3a4a42"
             strokeWidth="1"
             fill="none"
           />
         ))}
       </svg>
 
-      {/* skin image — large, angled, bleeding off the right edge */}
+      {/* skin image — large, steep diagonal tilt, bleeding off the top-right edge (matches reference) */}
       {icon && (
         <img
           src={icon}
           alt=""
           style={{
             position: "absolute",
-            right: -40,
-            top: "50%",
-            transform: "translateY(-50%) rotate(-8deg)",
-            width: 480,
+            right: -70,
+            top: "38%",
+            transform: "translateY(-50%) rotate(-15deg)",
+            width: 600,
             height: "auto",
             objectFit: "contain",
-            filter: `drop-shadow(0 20px 60px rgba(0,0,0,0.6)) drop-shadow(0 0 40px ${color}22)`,
+            filter: `drop-shadow(0 24px 70px rgba(0,0,0,0.65)) drop-shadow(0 0 50px ${color}22)`,
           }}
         />
       )}
 
       {/* content */}
       <div style={{ position: "relative", zIndex: 1, padding: "32px 36px", height: "100%", display: "flex", flexDirection: "column" }}>
-        {/* logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: 2, fontWeight: 800, fontSize: 26, letterSpacing: "-0.02em" }}>
-          <span style={{ color: "#ffffff" }}>CS</span>
-          <span style={{ color: "#35F26B" }}>↑</span>
-        </div>
+        {/* logo — real brand mark (recolored white+green for this dark card), not a text substitute */}
+        <img src="/csl-logo-white.png" alt="CSL" style={{ height: 34, width: "auto", objectFit: "contain" }} />
 
         {/* skin name + side badge */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 40 }}>
