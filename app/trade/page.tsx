@@ -9,6 +9,7 @@ import { useAccount } from "wagmi"
 import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { loadAccount, saveAccount, type ClosedTrade } from "@/lib/account"
 import Skin from "@/components/Skin"
+import { useAuthToken } from "@/hooks/useAuthToken"
 
 const API = process.env.NEXT_PUBLIC_API_URL || ""
 
@@ -138,6 +139,7 @@ async function sha256Hex(t: string) {
 export default function TradeTerminal() {
   const { address: walletAddr, isConnected } = useAccount()
   const { openConnectModal } = useConnectModal()
+  const { getToken, authHeader } = useAuthToken()
   const ready = true
   const authenticated = isConnected
   const [unlocked, setUnlocked] = useState<boolean | null>(null) // null = checking
@@ -177,7 +179,9 @@ export default function TradeTerminal() {
   const refreshAccount = useCallback(async () => {
     if (!API || !authenticated || !walletAddr) return
     try {
-      const res = await fetch(`${API}/api/account`, { headers: { "x-wallet": walletAddr }, cache: "no-store" })
+      const token = await getToken()
+      if (!token) { setServerMode(false); return }
+      const res = await fetch(`${API}/api/account`, { headers: authHeader(token), cache: "no-store" })
       if (!res.ok) { setServerMode(false); return }
       const a = await res.json()
       setServerMode(true)
@@ -204,11 +208,11 @@ export default function TradeTerminal() {
       setHistory(newHistory)
       setOpenOrders(a.openOrders || [])
       try {
-        const dr = await fetch(`${API}/api/deposit`, { headers: { "x-wallet": walletAddr }, cache: "no-store" })
+        const dr = await fetch(`${API}/api/deposit`, { headers: authHeader(token), cache: "no-store" })
         if (dr.ok) setDepositInfo(await dr.json())
       } catch {}
     } catch { setServerMode(false) }
-  }, [authenticated, walletAddr])
+  }, [authenticated, walletAddr, getToken, authHeader])
 
   useEffect(() => {
     if (!authenticated) { setBalance(0); setPositions([]); setHistory([]); setRealized(0); setVolume(0); setTradeCount(0); setOpenOrders([]); return }
@@ -447,9 +451,10 @@ export default function TradeTerminal() {
     if (orderType === "limit") {
       if (!serverMode) { setTradeErr("Limit orders need a connected account"); setTimeout(() => setTradeErr(null), 3000); return }
       try {
+        const token = await getToken()
         const res = await fetch(`${API}/api/trade/limit`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-wallet": walletAddr || "" },
+          headers: { "Content-Type": "application/json", ...authHeader(token) },
           body: JSON.stringify({ key: selMarket.key, side, collateral: col, leverage, limitPrice: limitPx }),
         })
         const d = await res.json()
@@ -462,9 +467,10 @@ export default function TradeTerminal() {
 
     if (serverMode) {
       try {
+        const token = await getToken()
         const res = await fetch(`${API}/api/trade/open`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-wallet": walletAddr || "" },
+          headers: { "Content-Type": "application/json", ...authHeader(token) },
           body: JSON.stringify({ key: selMarket.key, side, collateral: col, leverage }),
         })
         const d = await res.json()
@@ -492,9 +498,10 @@ export default function TradeTerminal() {
       const p = positions.find((x) => x.id === id)
       manualCloseRef.current.add(id)
       try {
+        const token = await getToken()
         const res = await fetch(`${API}/api/trade/close`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "x-wallet": walletAddr || "" },
+          headers: { "Content-Type": "application/json", ...authHeader(token) },
           body: JSON.stringify({ id }),
         })
         const d = await res.json()
@@ -872,7 +879,8 @@ export default function TradeTerminal() {
                 <button
                   onClick={async () => {
                     try {
-                      await fetch(`${API}/api/trade/limit/${o.id}`, { method: "DELETE", headers: { "x-wallet": walletAddr || "" } })
+                      const token = await getToken()
+                      await fetch(`${API}/api/trade/limit/${o.id}`, { method: "DELETE", headers: authHeader(token) })
                       await refreshAccount()
                     } catch {}
                     setCancelConfirmId(null)

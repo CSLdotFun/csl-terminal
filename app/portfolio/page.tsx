@@ -5,6 +5,7 @@ import { useAccount } from "wagmi"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import TNav from "@/components/TNav"
 import SkinSides from "@/components/SkinSides"
+import { useAuthToken } from "@/hooks/useAuthToken"
 
 const API = process.env.NEXT_PUBLIC_API_URL || ""
 const fmt = (n: number, d = 2) => (Number(n) || 0).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d })
@@ -18,6 +19,7 @@ const emptyAccount: Account = { balance: 0, realized: 0, volume: 0, trades: 0, p
 
 export default function Portfolio() {
   const { address: walletAddr, isConnected } = useAccount()
+  const { getToken, authHeader } = useAuthToken()
   const [acct, setAcct] = useState<Account | null>(null)
   const [marks, setMarks] = useState<Map<string, number>>(new Map())
   const [funds, setFunds] = useState<Map<string, number>>(new Map())
@@ -27,7 +29,9 @@ export default function Portfolio() {
   const refresh = useCallback(async () => {
     if (!API || !isConnected || !walletAddr) { setAcct(emptyAccount); return }
     try {
-      const res = await fetch(`${API}/api/account`, { headers: { "x-wallet": walletAddr }, cache: "no-store" })
+      const token = await getToken()
+      if (!token) return
+      const res = await fetch(`${API}/api/account`, { headers: authHeader(token), cache: "no-store" })
       if (!res.ok) return
       const a = await res.json()
       setAcct({
@@ -39,7 +43,7 @@ export default function Portfolio() {
         history: a.history || [],
       })
     } catch {}
-  }, [isConnected, walletAddr])
+  }, [isConnected, walletAddr, getToken, authHeader])
 
   useEffect(() => {
     refresh()

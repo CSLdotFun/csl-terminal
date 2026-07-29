@@ -8,6 +8,7 @@ import TNav from "@/components/TNav"
 import WalletDeposit from "@/components/WalletDeposit"
 import PnLChart, { PnlPoint } from "@/components/PnLChart"
 import Skin from "@/components/Skin"
+import { useAuthToken } from "@/hooks/useAuthToken"
 
 const API = process.env.NEXT_PUBLIC_API_URL || ""
 
@@ -16,6 +17,7 @@ type Trade = { id: string; key: string; name: string; image: string; side: strin
 
 export default function MyProfile() {
   const { address: walletAddr, isConnected } = useAccount()
+  const { getToken, authHeader } = useAuthToken()
   const ready = true
   const authenticated = isConnected
 
@@ -66,7 +68,9 @@ export default function MyProfile() {
   const refresh = useCallback(async () => {
     if (!API || !authenticated || !walletAddr) return
     try {
-      const res = await fetch(`${API}/api/account`, { headers: { "x-wallet": walletAddr }, cache: "no-store" })
+      const token = await getToken()
+      if (!token) return
+      const res = await fetch(`${API}/api/account`, { headers: authHeader(token), cache: "no-store" })
       if (!res.ok) return
       const a = await res.json()
       setBalance(Number(a.balance) || 0)
@@ -76,19 +80,19 @@ export default function MyProfile() {
       setPositions(a.positions || [])
       setHistory((a.history || []).map((t: any) => ({ ...t, closedAt: Number(t.closed_at) })))
       try {
-        const dr = await fetch(`${API}/api/deposit`, { headers: { "x-wallet": walletAddr }, cache: "no-store" })
+        const dr = await fetch(`${API}/api/deposit`, { headers: authHeader(token), cache: "no-store" })
         if (dr.ok) setDepositInfo(await dr.json())
       } catch {}
       try {
         const [depRes, wRes] = await Promise.all([
-          fetch(`${API}/api/deposits`, { headers: { "x-wallet": walletAddr }, cache: "no-store" }),
-          fetch(`${API}/api/withdrawals`, { headers: { "x-wallet": walletAddr }, cache: "no-store" }),
+          fetch(`${API}/api/deposits`, { headers: authHeader(token), cache: "no-store" }),
+          fetch(`${API}/api/withdrawals`, { headers: authHeader(token), cache: "no-store" }),
         ])
         if (depRes.ok) setDeposits((await depRes.json()).deposits || [])
         if (wRes.ok) setWithdrawals((await wRes.json()).withdrawals || [])
       } catch {}
     } catch {}
-  }, [authenticated, walletAddr])
+  }, [authenticated, walletAddr, getToken, authHeader])
 
   useEffect(() => {
     refresh()
@@ -395,8 +399,9 @@ export default function MyProfile() {
                 onClick={async () => {
                   setWBusy(true); setWMsg(null)
                   try {
+                    const token = await getToken()
                     const res = await fetch(`${API}/api/withdraw`, {
-                      method: "POST", headers: { "Content-Type": "application/json", "x-wallet": walletAddr || "" },
+                      method: "POST", headers: { "Content-Type": "application/json", ...authHeader(token) },
                       body: JSON.stringify({ amount: Number(wAmt), address: wAddr.trim() }),
                     })
                     const d = await res.json()
