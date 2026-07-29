@@ -1,10 +1,44 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Trophy } from "lucide-react"
 import TNav from "@/components/TNav"
 import SkinSides from "@/components/SkinSides"
 
+const API = process.env.NEXT_PUBLIC_API_URL || ""
+const fmt = (n: number) => (Number(n) || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const money = (n: number) => `$${fmt(n)}`
+const shortAddr = (a: string) => a ? `${a.slice(0, 6)}\u2026${a.slice(-4)}` : "\u2014"
+
+type Row = {
+  privy_id: string
+  volume: number
+  trades: number
+  realized: number
+  avatar_data_url: string | null
+  twitter_handle: string | null
+  twitter_avatar_url: string | null
+}
+
 export default function Leaderboard() {
+  const [rows, setRows] = useState<Row[] | null>(null)
+
+  useEffect(() => {
+    if (!API) return
+    let stop = false
+    const load = async () => {
+      try {
+        const res = await fetch(`${API}/api/leaderboard`, { cache: "no-store" })
+        if (!res.ok || stop) return
+        const d = await res.json()
+        setRows(d.leaderboard || [])
+      } catch {}
+    }
+    load()
+    const id = setInterval(load, 30000)
+    return () => { stop = true; clearInterval(id) }
+  }, [])
+
   return (
     <div className="min-h-screen bg-[#faf9f6] text-[#0e1512]">
       <TNav active="leaderboard" light title="Leaderboard" />
@@ -25,17 +59,50 @@ export default function Leaderboard() {
                 <th className="text-right font-medium px-5">Realized PnL</th>
               </tr>
             </thead>
+            {rows && rows.length > 0 && (
+              <tbody>
+                {rows.map((r, i) => {
+                  const avatar = r.twitter_avatar_url || r.avatar_data_url
+                  const label = r.twitter_handle ? `@${r.twitter_handle}` : shortAddr(r.privy_id)
+                  const up = Number(r.realized) >= 0
+                  return (
+                    <tr key={r.privy_id} className="border-t border-black/5">
+                      <td className="px-5 py-3 text-[#0e1512]/40 font-mono">{i + 1}</td>
+                      <td className="px-2 py-3">
+                        <div className="flex items-center gap-2.5">
+                          {avatar ? (
+                            <img src={avatar} alt="" className="w-7 h-7 rounded-full object-cover border border-black/10" />
+                          ) : (
+                            <div className="w-7 h-7 rounded-full bg-[#CDF60A]/15 border border-[#CDF60A]/30 flex items-center justify-center text-[11px] font-bold text-[#5f7a05]">
+                              {label.replace("@", "").slice(0, 1).toUpperCase()}
+                            </div>
+                          )}
+                          <span className="font-mono text-xs">{label}</span>
+                        </div>
+                      </td>
+                      <td className="px-2 text-right font-mono">{money(r.volume)}</td>
+                      <td className="px-2 text-right font-mono">{r.trades}</td>
+                      <td className={`px-5 text-right font-mono font-semibold ${up ? "text-[#5f7a05]" : "text-red-600"}`}>
+                        {up ? "+" : ""}{money(r.realized)}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            )}
           </table>
-          <div className="px-6 py-16 text-center">
-            <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[#CDF60A]/10 border border-[#CDF60A]/40 flex items-center justify-center">
-              <Trophy size={24} className="text-[#5f7a05]" />
+
+          {rows && rows.length === 0 && (
+            <div className="px-6 py-16 text-center">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[#CDF60A]/10 border border-[#CDF60A]/40 flex items-center justify-center">
+                <Trophy size={24} className="text-[#5f7a05]" />
+              </div>
+              <div className="font-semibold mb-1.5">No ranked trades yet</div>
+              <p className="text-[#0e1512]/45 text-sm max-w-[420px] mx-auto leading-relaxed">
+                The board fills in as real trades close. Every trade counts from day one - no pre-filled names, no bots.
+              </p>
             </div>
-            <div className="font-semibold mb-1.5">Season 1 hasn&apos;t started yet</div>
-            <p className="text-[#0e1512]/45 text-sm max-w-[420px] mx-auto leading-relaxed">
-              The leaderboard goes live together with USDG deposits at public launch.
-              Every trade will count from day one — no pre-filled names, no bots.
-            </p>
-          </div>
+          )}
         </div>
       </main>
     </div>

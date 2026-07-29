@@ -42,7 +42,7 @@ export default function MyProfile() {
   // avatar: custom (stored locally) wins, else the Twitter picture, else a monogram
   const [avatar, setAvatar] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
-  useEffect(() => { try { setAvatar(localStorage.getItem("csl_avatar")) } catch {} }, [])
+  useEffect(() => { try { setAvatar(localStorage.getItem("csl_avatar")) } catch {} }, []) // local cache while backend loads
   const shownAvatar = avatar
 
   const pickAvatar = () => fileRef.current?.click()
@@ -50,7 +50,7 @@ export default function MyProfile() {
     const f = e.target.files?.[0]
     if (!f) return
     const img = new Image()
-    img.onload = () => {
+    img.onload = async () => {
       const size = 256
       const c = document.createElement("canvas")
       c.width = size; c.height = size
@@ -60,6 +60,14 @@ export default function MyProfile() {
       const url = c.toDataURL("image/jpeg", 0.85)
       try { localStorage.setItem("csl_avatar", url) } catch {}
       setAvatar(url)
+      // sync server-side so OTHER users (leaderboard) see the same avatar
+      try {
+        const token = await getToken()
+        await fetch(`${API}/api/profile/avatar`, {
+          method: "POST", headers: { "Content-Type": "application/json", ...authHeader(token) },
+          body: JSON.stringify({ dataUrl: url }),
+        })
+      } catch {}
     }
     img.src = URL.createObjectURL(f)
   }
@@ -74,6 +82,7 @@ export default function MyProfile() {
       if (!res.ok) return
       const a = await res.json()
       setBalance(Number(a.balance) || 0)
+      if (a.avatar_data_url) { setAvatar(a.avatar_data_url); try { localStorage.setItem("csl_avatar", a.avatar_data_url) } catch {} }
       setRealized(Number(a.realized) || 0)
       setVolume(Number(a.volume) || 0)
       setTrades(Number(a.trades) || 0)
