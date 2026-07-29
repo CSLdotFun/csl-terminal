@@ -48,28 +48,28 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
         ))}
       </svg>
 
-      {/* skin image — large, steep diagonal tilt, bleeding off the top-right edge (matches reference) */}
+      {/* skin image — back to the previous, working position/size (the steeper/bigger version broke badly on wide-aspect icons like Redline) */}
       {icon && (
         <img
           src={icon}
           alt=""
           style={{
             position: "absolute",
-            right: -70,
-            top: "38%",
-            transform: "translateY(-50%) rotate(-15deg)",
-            width: 600,
+            right: -40,
+            top: "50%",
+            transform: "translateY(-50%) rotate(-8deg)",
+            width: 480,
             height: "auto",
             objectFit: "contain",
-            filter: `drop-shadow(0 24px 70px rgba(0,0,0,0.65)) drop-shadow(0 0 50px ${color}22)`,
+            filter: `drop-shadow(0 20px 60px rgba(0,0,0,0.6)) drop-shadow(0 0 40px ${color}22)`,
           }}
         />
       )}
 
       {/* content */}
       <div style={{ position: "relative", zIndex: 1, padding: "32px 36px", height: "100%", display: "flex", flexDirection: "column" }}>
-        {/* logo — real brand mark (recolored white+green for this dark card), not a text substitute */}
-        <img src="/csl-logo-white.png" alt="CSL" style={{ height: 34, width: "auto", objectFit: "contain" }} />
+        {/* logo — measured directly off the reference (191x109 at 2.15x scale = ~50px tall on this 680-wide card), NOT the old 34px */}
+        <img src="/csl-logo-white.png" alt="CSL" style={{ height: 50, width: "auto", objectFit: "contain" }} />
 
         {/* skin name + side badge */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 40 }}>
