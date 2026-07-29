@@ -3,13 +3,15 @@
 import TNav from "@/components/TNav"
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react"
-import { ArrowLeft, TrendingUp, TrendingDown, Zap, X, User } from "lucide-react"
+import { ArrowLeft, TrendingUp, TrendingDown, Zap, X, User, Share2 } from "lucide-react"
 import CandleChart, { type Candle } from "./CandleChart"
 import { useAccount } from "wagmi"
 import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { loadAccount, saveAccount, type ClosedTrade } from "@/lib/account"
 import Skin from "@/components/Skin"
 import { useAuthToken } from "@/hooks/useAuthToken"
+import PnLCardModal from "@/components/PnLCardModal"
+import type { PnLCardData } from "@/components/PnLCard"
 
 const API = process.env.NEXT_PUBLIC_API_URL || ""
 
@@ -228,6 +230,7 @@ export default function TradeTerminal() {
   const [limitPrice, setLimitPrice] = useState("")
   const [openOrders, setOpenOrders] = useState<any[]>([])
   const [closeConfirmId, setCloseConfirmId] = useState<string | null>(null)
+  const [shareCard, setShareCard] = useState<PnLCardData | null>(null)
   const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null)
   const [bottomTab, setBottomTab] = useState<"positions" | "orders" | "history">("positions")
   const [toasts, setToasts] = useState<{ id: string; key: string; name: string; image: string; reason: string; exit: number; pnl: number }[]>([])
@@ -668,7 +671,10 @@ export default function TradeTerminal() {
                         <td className="px-2 text-right font-mono text-xs">{money(p.entry)}</td>
                         <td className="px-2 text-right font-mono text-xs text-amber-600/80">{money(p.liq)}</td>
                         <td className={`px-2 text-right font-mono text-xs ${up ? "text-[#5f7a05]" : "text-red-600"}`}>{up ? "+" : ""}{money(pnl)} <span className="opacity-70">({up ? "+" : ""}{fmt(roe)}%)</span></td>
-                        <td className="px-2 text-right"><button onClick={() => setCloseConfirmId(p.id)} className="text-[#0e1512]/40 hover:text-[#0e1512] p-1"><X size={14} /></button></td>
+                        <td className="px-2 text-right"><div className="flex items-center justify-end gap-1">
+                          <button onClick={() => setShareCard({ key: p.key, name: p.name, side: p.side, leverage: p.leverage, entry: p.entry, mark: priceMap.current.get(p.key) ?? p.entry })} className="text-[#0e1512]/40 hover:text-[#0e1512] p-1"><Share2 size={14} /></button>
+                          <button onClick={() => setCloseConfirmId(p.id)} className="text-[#0e1512]/40 hover:text-[#0e1512] p-1"><X size={14} /></button>
+                        </div></td>
                       </tr>
                     )
                   })}
@@ -718,6 +724,7 @@ export default function TradeTerminal() {
                     <th className="text-right font-medium px-2">Exit</th>
                     <th className="text-right font-medium px-2">PnL</th>
                     <th className="text-right font-medium px-4">Closed</th>
+                    <th className="px-2"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -729,6 +736,7 @@ export default function TradeTerminal() {
                       <td className="px-2 text-right font-mono text-xs">{money(t.exit)}</td>
                       <td className={`px-2 text-right font-mono text-xs ${Number(t.pnl) >= 0 ? "text-[#5f7a05]" : "text-red-600"}`}>{Number(t.pnl) >= 0 ? "+" : ""}{money(t.pnl)}</td>
                       <td className="px-4 text-right text-xs text-[#0e1512]/30">{new Date(t.closedAt).toLocaleString()}</td>
+                      <td className="px-2 text-right"><button onClick={() => setShareCard({ key: t.key, name: t.name, side: t.side, leverage: t.leverage, entry: Number(t.entry), mark: Number(t.exit) })} className="text-[#0e1512]/40 hover:text-[#0e1512] p-1"><Share2 size={14} /></button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -892,6 +900,8 @@ export default function TradeTerminal() {
           </div>
         )
       })()}
+
+      {shareCard && <PnLCardModal data={shareCard} onClose={() => setShareCard(null)} />}
     </div>
   )
 }
