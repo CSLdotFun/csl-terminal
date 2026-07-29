@@ -3,6 +3,7 @@
 import { ArrowLeft, User } from "lucide-react"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { useAccount } from "wagmi"
+import { useRouter } from "next/navigation"
 
 const LINKS = [
   { key: "trade", label: "Trade", href: "/trade" },
@@ -17,6 +18,7 @@ const LINKS = [
    dark so un-migrated pages are untouched. */
 export default function TNav({ active, title, light = false }: { active: string; title: string; light?: boolean }) {
   const { isConnected } = useAccount()
+  const router = useRouter()
 
   const c = light
     ? {
@@ -40,8 +42,8 @@ export default function TNav({ active, title, light = false }: { active: string;
     <header className={`shrink-0 ${c.header}`}>
       <div className="h-16 flex items-center gap-4 px-4">
         <div className="flex items-center gap-3 flex-1">
-          <a href="/" className={`${c.back} transition-colors`}><ArrowLeft size={18} /></a>
-          <img src="/new-csl-logo.png" alt="CSL" className="w-16 h-16 object-contain" />
+          <button onClick={() => router.back()} className={`${c.back} transition-colors`} aria-label="Go back"><ArrowLeft size={18} /></button>
+          <a href="https://csl.fun" className="shrink-0"><img src="/new-csl-logo.png" alt="CSL" className="w-16 h-16 object-contain" /></a>
           <span className={`font-bold tracking-wide ${c.title}`}>{title}</span>
         </div>
 
