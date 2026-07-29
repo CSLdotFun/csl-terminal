@@ -41,9 +41,10 @@ const START_BALANCE = 0
 const LEV_MARKS = [2, 3, 5, 10, 15, 20]
 // Timeframe = candle interval (like exchanges). History is generated back to the
 // skin's release date, capped per interval so intraday series stay light.
-const TFS = ["15m", "1H", "4H", "1D", "1W"] as const
+const TFS = ["5m", "15m", "1H", "4H", "1D", "1W"] as const
 type Tf = (typeof TFS)[number]
 const TF_CFG: Record<Tf, { sec: number; cap: number }> = {
+  "5m": { sec: 300, cap: 800 },
   "15m": { sec: 900, cap: 1000 },
   "1H": { sec: 3600, cap: 1200 },
   "4H": { sec: 14400, cap: 1500 },
@@ -322,7 +323,7 @@ export default function TradeTerminal() {
 
     if (API) {
       ;(async () => {
-        if (chartTf === "15m" || chartTf === "1H" || chartTf === "4H") {
+        if (chartTf === "5m" || chartTf === "15m" || chartTf === "1H" || chartTf === "4H") {
           try {
             const res = await fetch(`${API}/api/intraday/${selected}?tf=${chartTf}`, { cache: "no-store" })
             if (res.ok) {
