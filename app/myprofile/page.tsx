@@ -26,6 +26,8 @@ export default function MyProfile() {
   const [positions, setPositions] = useState<Position[]>([])
   const [history, setHistory] = useState<Trade[]>([])
   const [depositInfo, setDepositInfo] = useState<{ enabled: boolean; address?: string; maxPerUser?: number } | null>(null)
+  const [deposits, setDeposits] = useState<{ id: string; amount: number; address: string; sig: string; credited_at: string }[]>([])
+  const [withdrawals, setWithdrawals] = useState<{ id: string; amount: number; address: string; status: string; sig: string | null; created_at: string }[]>([])
   const [marks, setMarks] = useState<Map<string, number>>(new Map())
   const [copied, setCopied] = useState(false)
   const [wAmt, setWAmt] = useState("")
@@ -76,6 +78,14 @@ export default function MyProfile() {
       try {
         const dr = await fetch(`${API}/api/deposit`, { headers: { "x-wallet": walletAddr }, cache: "no-store" })
         if (dr.ok) setDepositInfo(await dr.json())
+      } catch {}
+      try {
+        const [depRes, wRes] = await Promise.all([
+          fetch(`${API}/api/deposits`, { headers: { "x-wallet": walletAddr }, cache: "no-store" }),
+          fetch(`${API}/api/withdrawals`, { headers: { "x-wallet": walletAddr }, cache: "no-store" }),
+        ])
+        if (depRes.ok) setDeposits((await depRes.json()).deposits || [])
+        if (wRes.ok) setWithdrawals((await wRes.json()).withdrawals || [])
       } catch {}
     } catch {}
   }, [authenticated, walletAddr])
@@ -276,6 +286,57 @@ export default function MyProfile() {
               >Withdraw</button>
               {wMsg && <div className="text-xs text-[#0e1512]/50 mt-2">{wMsg}</div>}
             </div>
+          </div>
+
+          {/* deposit / withdrawal history — merged, newest first */}
+          <div className="border-b border-black/10">
+            <div className="px-4 md:px-8 py-3.5 text-[11px] uppercase tracking-wider text-[#0e1512]/35 border-b border-black/10">Deposits &amp; Withdrawals</div>
+            {(() => {
+              const rows = [
+                ...deposits.map((d) => ({ kind: "deposit" as const, id: d.id, amount: d.amount, address: d.address, status: "credited", sig: d.sig, at: Number(d.credited_at) })),
+                ...withdrawals.map((w) => ({ kind: "withdraw" as const, id: w.id, amount: w.amount, address: w.address, status: w.status, sig: w.sig, at: Number(w.created_at) })),
+              ].sort((a, b) => b.at - a.at)
+              if (!rows.length) return <div className="px-4 md:px-8 py-10 text-center text-[#0e1512]/30 text-sm">No deposits or withdrawals yet.</div>
+              return (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-[#0e1512]/40 text-[11px] uppercase">
+                      <th className="text-left font-medium px-4 md:px-8 py-2">Type</th>
+                      <th className="text-right font-medium px-2">Amount</th>
+                      <th className="text-left font-medium px-2">Address</th>
+                      <th className="text-left font-medium px-2">Status</th>
+                      <th className="text-right font-medium px-4 md:px-8">Date &amp; time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.slice(0, 30).map((r) => (
+                      <tr key={r.kind + r.id} className="border-t border-black/5">
+                        <td className="px-4 md:px-8 py-3">
+                          <span className={`text-xs font-semibold ${r.kind === "deposit" ? "text-[#5f7a05]" : "text-[#0e1512]/70"}`}>
+                            {r.kind === "deposit" ? "↓ Deposit" : "↑ Withdraw"}
+                          </span>
+                        </td>
+                        <td className="px-2 text-right font-mono text-xs">${fmt(r.amount)}</td>
+                        <td className="px-2 font-mono text-xs text-[#0e1512]/50">{r.address.slice(0, 6)}…{r.address.slice(-4)}</td>
+                        <td className="px-2">
+                          <span className={`text-[11px] px-2 py-0.5 rounded-full ${
+                            r.status === "credited" || r.status === "sent" ? "bg-[#CDF60A]/20 text-[#5f7a05]" :
+                            r.status === "pending" || r.status === "processing" ? "bg-amber-500/15 text-amber-700" :
+                            "bg-black/5 text-[#0e1512]/40"
+                          }`}>{r.status}</span>
+                        </td>
+                        <td className="px-4 md:px-8 py-3 text-right text-xs text-[#0e1512]/30">
+                          {r.sig ? (
+                            <a href={`https://robinhoodchain.blockscout.com/tx/${r.sig}`} target="_blank" rel="noopener noreferrer" className="text-[#5f7a05] hover:underline mr-2">tx</a>
+                          ) : null}
+                          {new Date(r.at).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )
+            })()}
           </div>
 
           {/* history — full width table, no card wrapper */}
