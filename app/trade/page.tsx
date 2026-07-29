@@ -132,32 +132,12 @@ function genRecent(key: string, tfSec: number, count: number, endPrice: number, 
    whatever we bundle locally. Any load error falls back a step, so a Steam
    hiccup can never leave an empty box. */
 
-// Pre-launch access gate (sha-256 of the access password; removed at public launch)
-const GATE_HASH = "e8802414ead697f6edac02462a10db5bfa0878a107d18cd4319879ba962c3325"
-async function sha256Hex(t: string) {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t))
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("")
-}
-
 export default function TradeTerminal() {
   const { address: walletAddr, isConnected } = useAccount()
   const { openConnectModal } = useConnectModal()
   const { getToken, authHeader } = useAuthToken()
   const ready = true
   const authenticated = isConnected
-  const [unlocked, setUnlocked] = useState<boolean | null>(null) // null = checking
-  const [gateInput, setGateInput] = useState("")
-  const [gateError, setGateError] = useState(false)
-  useEffect(() => {
-    try { setUnlocked(localStorage.getItem("csl_gate") === GATE_HASH) } catch { setUnlocked(false) }
-  }, [])
-  const tryUnlock = async () => {
-    const h = await sha256Hex(gateInput)
-    if (h === GATE_HASH) {
-      try { localStorage.setItem("csl_gate", GATE_HASH) } catch {}
-      setUnlocked(true)
-    } else { setGateError(true); setTimeout(() => setGateError(false), 1200) }
-  }
   const [markets, setMarkets] = useState<Market[]>([])
   const [selected, setSelected] = useState("dragon-lore")
   const [live, setLive] = useState(false)
@@ -539,35 +519,6 @@ export default function TradeTerminal() {
 
   const countdown = Math.max(0, Math.floor((nextFunding - now) / 1000))
   const dayUp = (selMarket?.change24h ?? 0) >= 0
-
-  if (unlocked !== true) {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center bg-[#faf9f6] text-[#0e1512] px-5">
-        {unlocked === false && (
-          <div className="w-full max-w-[360px] text-center">
-            <img src="/new-csl-logo.png" alt="CSL" className="w-20 h-20 object-contain mx-auto mb-5" />
-            <h1 className="text-xl font-bold mb-1.5">Private beta</h1>
-            <p className="text-[#0e1512]/45 text-sm mb-6">The terminal is access-gated until public launch.</p>
-            <div className={`flex items-center rounded-xl bg-black/5 border px-3 transition-colors ${gateError ? "border-red-500/60" : "border-black/15 focus-within:border-[#CDF60A]/50"}`}>
-              <input
-                type="password"
-                value={gateInput}
-                onChange={(e) => setGateInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") tryUnlock() }}
-                placeholder="Access password"
-                className="flex-1 bg-transparent py-3 outline-none text-sm"
-                autoFocus
-              />
-            </div>
-            <button onClick={tryUnlock} className="mt-3 w-full h-11 rounded-xl bg-[#CDF60A] hover:bg-[#d9fa3a] text-[#0e1512] font-bold text-sm transition-colors">
-              {gateError ? "Wrong password" : "Enter"}
-            </button>
-            <a href="/" className="inline-block mt-5 text-xs text-[#0e1512]/35 hover:text-[#0e1512]/60">← Back to csl.fun</a>
-          </div>
-        )}
-      </div>
-    )
-  }
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-[#faf9f6] text-[#0e1512]">
