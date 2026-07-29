@@ -279,15 +279,34 @@ export default function TradeTerminal() {
         const ms: Market[] = data.markets
         ms.forEach((m) => { priceMap.current.set(m.key, m.price); fundMap.current.set(m.key, m.funding || 0) })
         setMarkets(ms)
-        es = new EventSource(`${API}/api/stream`)
-        es.onmessage = (ev) => {
-          const msg = JSON.parse(ev.data)
-          if (msg.nextFunding) setNextFunding(msg.nextFunding * 1000)
-          if (msg.type === "prices") applyUpdates(msg.updates)
-          if (msg.type === "snapshot") { msg.markets.forEach((m: any) => fundMap.current.set(m.key, m.funding || 0)); applyUpdates(msg.markets.map((m: any) => ({ key: m.key, price: m.price }))) }
+
+        // Connect to the REAL price stream, with reconnect-with-backoff on
+        // drop. SSE connections over Vercel/Railway proxies get closed
+        // periodically as routine infra behaviour — that used to fall back
+        // to a fake Math.random() price generator, which is what was making
+        // the chart "jump every second": not a real price, a simulation.
+        let backoffMs = 1000
+        const connectStream = () => {
+          if (cancelled) return
+          es = new EventSource(`${API}/api/stream`)
+          es.onmessage = (ev) => {
+            const msg = JSON.parse(ev.data)
+            if (msg.nextFunding) setNextFunding(msg.nextFunding * 1000)
+            if (msg.type === "prices") applyUpdates(msg.updates)
+            if (msg.type === "snapshot") { msg.markets.forEach((m: any) => fundMap.current.set(m.key, m.funding || 0)); applyUpdates(msg.markets.map((m: any) => ({ key: m.key, price: m.price }))) }
+          }
+          es.onopen = () => { setLive(true); backoffMs = 1000 }
+          es.onerror = () => {
+            es?.close()
+            setLive(false)
+            if (cancelled) return
+            // reconnect to the REAL stream — never fabricate price movement
+            // just because the connection blipped
+            setTimeout(connectStream, backoffMs)
+            backoffMs = Math.min(backoffMs * 2, 15000)
+          }
         }
-        es.onopen = () => setLive(true)
-        es.onerror = () => { es?.close(); if (!cancelled) startMock() }
+        connectStream()
       } catch { if (!cancelled) startMock() }
     }
     boot()
