@@ -99,7 +99,7 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
         {/* big PnL number — fontSize precisely calibrated: rendered at 112px
             this font produces a 75-76px glyph height, matching the reference
             measurement exactly (verified by rendering and measuring, not guessed) */}
-        <div style={{ fontFamily: FONT_SERIF, fontSize: 112, fontWeight: 700, color, marginTop: 38, lineHeight: 1.05, fontVariantNumeric: "tabular-nums" }}>
+        <div style={{ fontFamily: FONT_SERIF, fontSize: 112, fontWeight: 700, color, marginTop: 38, lineHeight: 0.85, fontVariantNumeric: "tabular-nums" }}>
           {up ? "+" : "\u2212"}{Math.abs(pnlPct).toFixed(1)}%
         </div>
 
