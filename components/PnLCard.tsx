@@ -13,6 +13,12 @@ export interface PnLCardData {
 }
 
 const fmt = (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+// The rest of the site loads Geist Sans via next/font (see app/layout.tsx),
+// exposed as --font-geist-sans. The card previously asked for "Inter", which
+// was never actually loaded anywhere in this project — the browser silently
+// fell back to whatever generic system font was installed, which is why the
+// text never looked right and varied machine to machine.
+const FONT = "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif"
 
 export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?: React.Ref<HTMLDivElement> }) {
   const { key, name, side, leverage, entry, mark, referralCode = "csl" } = data
@@ -31,11 +37,11 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
         position: "relative",
         overflow: "hidden",
         background: "linear-gradient(160deg, #0a1512 0%, #060a09 60%, #030504 100%)",
-        fontFamily: "Inter, system-ui, sans-serif",
+        fontFamily: FONT,
         color: "#ffffff",
       }}
     >
-      {/* decorative wave-line pattern, radiating from the top-right — more visible, matching reference */}
+      {/* decorative wave-line pattern, radiating from the top-right */}
       <svg width="680" height="540" style={{ position: "absolute", inset: 0, opacity: 0.55 }} viewBox="0 0 680 540">
         {Array.from({ length: 16 }).map((_, i) => (
           <path
@@ -48,7 +54,7 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
         ))}
       </svg>
 
-      {/* skin image — back to the previous, working position/size (the steeper/bigger version broke badly on wide-aspect icons like Redline) */}
+      {/* skin image */}
       {icon && (
         <img
           src={icon}
@@ -68,16 +74,18 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
 
       {/* content */}
       <div style={{ position: "relative", zIndex: 1, padding: "32px 36px", height: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-        {/* logo — absolute positioned at the exact coordinates measured off the reference (29px left, 24px top, ~89x51) so it can never drift regardless of flex behavior */}
-        <img
-          src="/csl-logo-white.png"
-          alt="CSL"
-          style={{ position: "absolute", left: 29, top: 24, height: 51, width: "auto", objectFit: "contain", display: "block" }}
-        />
+        {/* logo — crisp bold text with a hard dark stroke (the recolored PNG asset
+            lost its outline when black->white, turning it into an unreadable
+            blob). A repeated small-offset text-shadow fakes an outline reliably
+            across browsers and inside html-to-image's export. */}
+        <div style={{ position: "absolute", left: 29, top: 22, display: "flex", alignItems: "center", gap: 3, fontSize: 34, fontWeight: 900, letterSpacing: "-0.02em" }}>
+          <span style={{ color: "#ffffff", textShadow: "-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000" }}>CS</span>
+          <span style={{ color: "#35F26B", textShadow: "-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000" }}>&#8593;</span>
+        </div>
 
         {/* skin name + side badge */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 96 }}>
-          <span style={{ fontSize: 20, color: "rgba(255,255,255,0.85)" }}>{name}</span>
+          <span style={{ fontSize: 20, fontWeight: 500, color: "rgba(255,255,255,0.85)" }}>{name}</span>
           <span
             style={{
               fontSize: 12, fontWeight: 700, letterSpacing: "0.04em", padding: "4px 10px", borderRadius: 6,
@@ -90,8 +98,8 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
           </span>
         </div>
 
-        {/* big PnL number */}
-        <div style={{ fontSize: 68, fontWeight: 700, color, marginTop: 8, lineHeight: 1.1, fontVariantNumeric: "tabular-nums" }}>
+        {/* big PnL number — bolder weight, bigger, matches the reference's heavy numerals */}
+        <div style={{ fontSize: 76, fontWeight: 800, color, marginTop: 6, lineHeight: 1.05, letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}>
           {up ? "+" : ""}{pnlPct.toFixed(1)}%
         </div>
 
@@ -99,18 +107,18 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
         <div style={{ display: "flex", gap: 56, marginTop: 28 }}>
           <div>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Entry Price</div>
-            <div style={{ fontSize: 18, marginTop: 2 }}>{fmt(entry)}</div>
+            <div style={{ fontSize: 18, fontWeight: 600, marginTop: 2 }}>{fmt(entry)}</div>
           </div>
           <div>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Mark Price</div>
-            <div style={{ fontSize: 18, marginTop: 2 }}>{fmt(mark)}</div>
+            <div style={{ fontSize: 18, fontWeight: 600, marginTop: 2 }}>{fmt(mark)}</div>
           </div>
         </div>
 
         {/* referral, pinned to the bottom */}
         <div style={{ marginTop: "auto" }}>
           <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Referral code:</div>
-          <div style={{ fontSize: 16, marginTop: 2 }}>csl.fun/trade?ref={referralCode}</div>
+          <div style={{ fontSize: 16, fontWeight: 600, marginTop: 2 }}>csl.fun/trade?ref={referralCode}</div>
         </div>
       </div>
     </div>
