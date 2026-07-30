@@ -10,6 +10,7 @@ const LINKS = [
   { key: "portfolio", label: "Portfolio", href: "/portfolio" },
   { key: "stats", label: "Stats", href: "/stats" },
   { key: "vault", label: "Vault", href: "/vault" },
+  { key: "staking", label: "Staking", href: "/staking" },
   { key: "leaderboard", label: "Leaderboard", href: "/leaderboard" },
 ]
 
