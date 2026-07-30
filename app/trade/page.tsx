@@ -640,7 +640,8 @@ export default function TradeTerminal() {
             {bottomTab === "positions" && (positions.length === 0 ? (
               <div className="px-4 py-8 text-center text-[#0e1512]/25 text-sm">No open positions</div>
             ) : (
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[680px]">
                 <thead>
                   <tr className="text-[#0e1512]/40 text-[11px] uppercase">
                     <th className="text-left font-medium px-4 py-2">Market</th>
@@ -672,12 +673,14 @@ export default function TradeTerminal() {
                   })}
                 </tbody>
               </table>
+              </div>
             ))}
 
             {bottomTab === "orders" && (openOrders.length === 0 ? (
               <div className="px-4 py-8 text-center text-[#0e1512]/25 text-sm">No open orders</div>
             ) : (
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[560px]">
                 <thead>
                   <tr className="text-[#0e1512]/40 text-[11px] uppercase">
                     <th className="text-left font-medium px-4 py-2">Market</th>
@@ -702,12 +705,14 @@ export default function TradeTerminal() {
                   })}
                 </tbody>
               </table>
+              </div>
             ))}
 
             {bottomTab === "history" && (history.length === 0 ? (
               <div className="px-4 py-8 text-center text-[#0e1512]/25 text-sm">No closed trades yet</div>
             ) : (
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[640px]">
                 <thead>
                   <tr className="text-[#0e1512]/40 text-[11px] uppercase">
                     <th className="text-left font-medium px-4 py-2">Market</th>
@@ -733,6 +738,7 @@ export default function TradeTerminal() {
                   ))}
                 </tbody>
               </table>
+              </div>
             ))}
           </div>
         </main>
