@@ -3,7 +3,7 @@
 import TNav from "@/components/TNav"
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react"
-import { ArrowLeft, TrendingUp, TrendingDown, Zap, X, User, Share2 } from "lucide-react"
+import { ArrowLeft, TrendingUp, TrendingDown, Zap, X, User, Share2, ChevronDown } from "lucide-react"
 import CandleChart, { type Candle, type PositionLine } from "./CandleChart"
 import { useAccount } from "wagmi"
 import { useConnectModal } from "@rainbow-me/rainbowkit"
@@ -140,6 +140,7 @@ export default function TradeTerminal() {
   const authenticated = isConnected
   const [markets, setMarkets] = useState<Market[]>([])
   const [selected, setSelected] = useState("dragon-lore")
+  const [mobileMarketsOpen, setMobileMarketsOpen] = useState(false)
   const [live, setLive] = useState(false)
   const [nextFunding, setNextFunding] = useState(() => nextHour())
   const [now, setNow] = useState(Date.now())
@@ -596,16 +597,19 @@ export default function TradeTerminal() {
         <main className="flex flex-col min-h-0">
           <div className="flex-1 min-h-0 flex flex-col border-b border-black/10">
             <div className="shrink-0 flex items-center gap-3 px-4 py-3 border-b border-black/5 flex-wrap">
-              {selMarket && <Skin mk={selMarket.key} img={selMarket.image} icon={selMarket.icon} className="w-14 h-10" />}
-              <div>
-                <div className="font-semibold leading-tight flex items-center gap-2">
-                  {selMarket?.name ?? "—"}
-                  {selMarket?.wear && (
-                    <span className="text-[10px] font-semibold tracking-wide px-1.5 py-0.5 rounded bg-black/10 text-[#0e1512]/60 border border-black/10">{selMarket.wear}</span>
-                  )}
+              <button onClick={() => setMobileMarketsOpen(true)} className="flex items-center gap-3 text-left">
+                {selMarket && <Skin mk={selMarket.key} img={selMarket.image} icon={selMarket.icon} className="w-14 h-10" />}
+                <div>
+                  <div className="font-semibold leading-tight flex items-center gap-2">
+                    {selMarket?.name ?? "—"}
+                    {selMarket?.wear && (
+                      <span className="text-[10px] font-semibold tracking-wide px-1.5 py-0.5 rounded bg-black/10 text-[#0e1512]/60 border border-black/10">{selMarket.wear}</span>
+                    )}
+                    <ChevronDown size={14} className="lg:hidden text-[#0e1512]/40" />
+                  </div>
+                  <div className="text-[#0e1512]/40 text-xs">CSL Perp · {wearFull(selMarket?.wear)} · USDG-settled · since {releaseYear(selected)}</div>
                 </div>
-                <div className="text-[#0e1512]/40 text-xs">CSL Perp · {wearFull(selMarket?.wear)} · USDG-settled · since {releaseYear(selected)}</div>
-              </div>
+              </button>
               <div className="ml-auto flex items-center gap-6">
                 <MiniStat label="Funding / 1h" value={`${funding >= 0 ? "+" : ""}${fmt(funding * 100, 4)}%`} cls={funding >= 0 ? "text-[#5f7a05]" : "text-red-600"} />
                 <MiniStat label="Next funding" value={hms(countdown)} />
@@ -734,7 +738,7 @@ export default function TradeTerminal() {
         </main>
 
         {/* order panel */}
-        <aside className="border-l border-black/10 overflow-y-auto no-scrollbar bg-white p-3">
+        <aside className="lg:border-l border-t lg:border-t-0 border-black/10 overflow-y-auto no-scrollbar bg-white p-3">
           <div className="grid grid-cols-2 gap-2 mb-2 bg-black/5 p-1 rounded-lg">
             <button onClick={() => setCollateralAsset("USDG")} className={`flex items-center justify-center gap-1.5 py-1.5 rounded-md font-semibold text-xs transition-colors ${collateralAsset === "USDG" ? "bg-white shadow-sm text-[#0e1512]" : "text-[#0e1512]/50 hover:text-[#0e1512]/80"}`}>USDG</button>
             <button
@@ -898,6 +902,35 @@ export default function TradeTerminal() {
       })()}
 
       {shareCard && <PnLCardModal data={shareCard} onClose={() => setShareCard(null)} />}
+
+      {/* mobile markets picker — the desktop sidebar is lg:flex only, so this
+          is the sole way to switch markets on a phone screen */}
+      {mobileMarketsOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex items-end justify-center bg-black/50" onClick={() => setMobileMarketsOpen(false)}>
+          <div className="w-full max-h-[75vh] bg-white rounded-t-2xl overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-black/10">
+              <span className="text-[11px] uppercase tracking-wider text-[#0e1512]/40">Markets</span>
+              <button onClick={() => setMobileMarketsOpen(false)} className="p-1 text-[#0e1512]/40"><X size={18} /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto no-scrollbar">
+              {markets.map((m) => (
+                <button key={m.key} onClick={() => { setSelected(m.key); setMobileMarketsOpen(false) }}
+                  className={`w-full flex items-center gap-3 px-4 py-3.5 text-left border-l-2 transition-colors ${selected === m.key ? "bg-[#CDF60A]/10 border-[#CDF60A]" : "border-transparent active:bg-black/5"}`}>
+                  <Skin mk={m.key} img={m.image} icon={m.icon} className="w-14 h-10" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13px] font-medium truncate flex items-center gap-1.5">
+                      <span className="truncate">{m.name}</span>
+                      {m.wear && <span className="shrink-0 text-[9px] font-semibold tracking-wide px-1 py-px rounded bg-black/10 text-[#0e1512]/45">{m.wear}</span>}
+                    </div>
+                    <div className="font-mono text-sm">{money(m.price)}</div>
+                  </div>
+                  <div className={`text-[11px] font-mono ${m.change24h >= 0 ? "text-[#5f7a05]" : "text-red-600"}`}>{m.change24h >= 0 ? "+" : ""}{fmt(m.change24h, 1)}%</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
