@@ -13,12 +13,12 @@ export interface PnLCardData {
 }
 
 const fmt = (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-// The rest of the site loads Geist Sans via next/font (see app/layout.tsx),
-// exposed as --font-geist-sans. The card previously asked for "Inter", which
-// was never actually loaded anywhere in this project — the browser silently
-// fell back to whatever generic system font was installed, which is why the
-// text never looked right and varied machine to machine.
-const FONT = "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif"
+const FONT_BODY = "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif"
+// The big percentage in the reference is a serif numeral, not sans — no
+// serif webfont is loaded anywhere in this project, so this uses a safe,
+// universally-available system serif stack rather than adding font-loading
+// complexity (and a risk of it not embedding correctly in the PNG export).
+const FONT_SERIF = "Georgia, 'Times New Roman', serif"
 
 export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?: React.Ref<HTMLDivElement> }) {
   const { key, name, side, leverage, entry, mark, referralCode = "csl" } = data
@@ -37,21 +37,17 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
         position: "relative",
         overflow: "hidden",
         background: "linear-gradient(160deg, #0a1512 0%, #060a09 60%, #030504 100%)",
-        fontFamily: FONT,
+        fontFamily: FONT_BODY,
         color: "#ffffff",
       }}
     >
-      {/* decorative wave-line pattern, radiating from the top-right */}
-      <svg width="680" height="540" style={{ position: "absolute", inset: 0, opacity: 0.55 }} viewBox="0 0 680 540">
-        {Array.from({ length: 16 }).map((_, i) => (
-          <path
-            key={i}
-            d={`M ${300 + i * 30} -60 Q ${700 + i * 12} ${170 + i * 10} ${300 + i * 30} 600`}
-            stroke="#3a4a42"
-            strokeWidth="1"
-            fill="none"
-          />
-        ))}
+      {/* decorative wave-line pattern — spans the FULL card width (was
+          bunched up on the right half only, leaving the left/text side bare) */}
+      <svg width="680" height="540" style={{ position: "absolute", inset: 0, opacity: 0.5 }} viewBox="0 0 680 540">
+        {Array.from({ length: 26 }).map((_, i) => {
+          const x = -260 + i * 34
+          return <path key={i} d={`M ${x} -80 Q ${x + 420} 270 ${x} 620`} stroke="#3a4a42" strokeWidth="1" fill="none" />
+        })}
       </svg>
 
       {/* skin image */}
@@ -74,14 +70,10 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
 
       {/* content */}
       <div style={{ position: "relative", zIndex: 1, padding: "32px 36px", height: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-        {/* logo — crisp bold text with a hard dark stroke (the recolored PNG asset
-            lost its outline when black->white, turning it into an unreadable
-            blob). A repeated small-offset text-shadow fakes an outline reliably
-            across browsers and inside html-to-image's export. */}
-        <div style={{ position: "absolute", left: 29, top: 22, display: "flex", alignItems: "center", gap: 3, fontSize: 34, fontWeight: 900, letterSpacing: "-0.02em" }}>
-          <span style={{ color: "#ffffff", textShadow: "-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000" }}>CS</span>
-          <span style={{ color: "#35F26B", textShadow: "-1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000" }}>&#8593;</span>
-        </div>
+        {/* logo — the REAL brand asset, unmodified. Its black outline blends
+            into this dark background on its own (that's the point of an
+            outline) — recoloring it earlier destroyed the letterforms. */}
+        <img src="/new-csl-logo.png" alt="CSL" style={{ position: "absolute", left: 29, top: 22, height: 51, width: "auto", objectFit: "contain" }} />
 
         {/* skin name + side badge */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 96 }}>
@@ -98,9 +90,9 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
           </span>
         </div>
 
-        {/* big PnL number — bolder weight, bigger, matches the reference's heavy numerals */}
-        <div style={{ fontSize: 76, fontWeight: 800, color, marginTop: 6, lineHeight: 1.05, letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}>
-          {up ? "+" : ""}{pnlPct.toFixed(1)}%
+        {/* big PnL number — serif, matching the reference's numeral style */}
+        <div style={{ fontFamily: FONT_SERIF, fontSize: 80, fontWeight: 700, color, marginTop: 6, lineHeight: 1.05, fontVariantNumeric: "tabular-nums" }}>
+          {up ? "+" : "\u2212"}{Math.abs(pnlPct).toFixed(1)}%
         </div>
 
         {/* entry / mark */}
