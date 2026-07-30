@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Trophy } from "lucide-react"
+import { Trophy, TrendingUp, Users, Flame, Layers } from "lucide-react"
 import TNav from "@/components/TNav"
 import SkinSides from "@/components/SkinSides"
 
@@ -20,8 +20,12 @@ type Row = {
   twitter_avatar_url: string | null
 }
 
+type PlatformStats = { totalVolume: number; totalTrades: number; activeTraders: number; openInterest: number; openPositions: number }
+
 export default function Leaderboard() {
   const [rows, setRows] = useState<Row[] | null>(null)
+  const [stats, setStats] = useState<PlatformStats | null>(null)
+  const [tvl, setTvl] = useState<number | null>(null)
 
   useEffect(() => {
     if (!API) return
@@ -32,6 +36,14 @@ export default function Leaderboard() {
         if (!res.ok || stop) return
         const d = await res.json()
         setRows(d.leaderboard || [])
+      } catch {}
+      try {
+        const res = await fetch(`${API}/api/platform-stats`, { cache: "no-store" })
+        if (res.ok && !stop) setStats(await res.json())
+      } catch {}
+      try {
+        const res = await fetch(`${API}/api/vault`, { cache: "no-store" })
+        if (res.ok && !stop) setTvl((await res.json()).tvl ?? 0)
       } catch {}
     }
     load()
@@ -46,7 +58,15 @@ export default function Leaderboard() {
 
       <main className="relative z-10 max-w-[900px] mx-auto px-5 py-14">
         <h1 className="text-3xl font-bold tracking-[-0.02em] mb-2">Top traders</h1>
-        <p className="text-[#0e1512]/50 mb-10">Ranked by realized PnL. Resets every season.</p>
+        <p className="text-[#0e1512]/50 mb-6">Ranked by realized PnL. Resets every season.</p>
+
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-10">
+          <StatCard icon={<TrendingUp size={14} />} label="Total volume" value={stats ? money(stats.totalVolume) : "—"} />
+          <StatCard icon={<Layers size={14} />} label="Open interest" value={stats ? money(stats.openInterest) : "—"} />
+          <StatCard icon={<Flame size={14} />} label="Vault TVL" value={tvl !== null ? money(tvl) : "—"} />
+          <StatCard icon={<Users size={14} />} label="Active traders" value={stats ? String(stats.activeTraders) : "—"} />
+          <StatCard icon={<Trophy size={14} />} label="Total trades" value={stats ? String(stats.totalTrades) : "—"} />
+        </div>
 
         <div className="rounded-2xl border border-black/10 bg-black/[0.02] overflow-hidden">
           <table className="w-full text-sm">
@@ -105,6 +125,15 @@ export default function Leaderboard() {
           )}
         </div>
       </main>
+    </div>
+  )
+}
+
+function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="rounded-xl bg-black/[0.04] border border-black/5 p-3.5">
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-[#0e1512]/40 mb-1.5">{icon}{label}</div>
+      <div className="font-mono font-semibold">{value}</div>
     </div>
   )
 }
