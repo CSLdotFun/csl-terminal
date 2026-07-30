@@ -35,6 +35,9 @@ export default function Staking() {
   const { data: totalStaked } = useReadContract({
     address: STAKING_ADDRESS, abi: CSL_STAKING_ABI, functionName: "totalSupply", query: { enabled: live },
   })
+  const { data: rewardRateRaw } = useReadContract({
+    address: STAKING_ADDRESS, abi: CSL_STAKING_ABI, functionName: "rewardRate", query: { enabled: live },
+  })
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: CSL_TOKEN_ADDRESS, abi: ERC20_ABI, functionName: "allowance", args: address && STAKING_ADDRESS ? [address, STAKING_ADDRESS] : undefined, query: { enabled: !!(enabled && address) },
   })
@@ -57,6 +60,15 @@ export default function Staking() {
   const busy = isPending || txConfirming
   const maxAmt = tab === "stake" ? walletBal : staked
 
+  // rewardRate is USDG-per-second across ALL stakers (contract-wide), not
+  // per-token — this is the same "how much drips out" stat Quiver showed,
+  // just in USDG instead of ETH since that's what CSL settles everything in.
+  const dailyEmission = live && rewardRateRaw !== undefined ? Number(formatUnits(rewardRateRaw * BigInt(86400), DECIMALS)) : null
+  const monthlyEmission = dailyEmission !== null ? dailyEmission * 30 : null
+  const perTokenDaily = dailyEmission !== null && totalStaked && totalStaked > BigInt(0)
+    ? dailyEmission / Number(formatUnits(totalStaked, DECIMALS))
+    : null
+
   return (
     <div className="min-h-screen bg-[#faf9f6] text-[#0e1512]">
       <TNav active="staking" light title="Staking" />
@@ -75,9 +87,16 @@ export default function Staking() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
           <StatCard icon={<Flame size={16} />} label="Total staked" value={live && totalStaked !== undefined ? `${fmt(Number(formatUnits(totalStaked, DECIMALS)))} $CSL` : "—"} />
           <StatCard icon={<Users size={16} />} label="Reward pool" value="USDG" />
-          <StatCard icon={<TrendingUp size={16} />} label="Reward rate" value={live ? "live" : "—"} />
+          <StatCard icon={<TrendingUp size={16} />} label="Reward rate" value={dailyEmission !== null ? `${fmt(dailyEmission)} USDG/day` : "—"} />
           <StatCard icon={<Lock size={16} />} label="Your stake" value={enabled && staked !== undefined ? `${fmt(Number(formatUnits(staked, DECIMALS)))} $CSL` : "—"} />
         </div>
+        {dailyEmission !== null && (
+          <p className="text-[11px] text-[#0e1512]/35 mb-7 max-w-[640px]">
+            {monthlyEmission !== null && <>~{fmt(monthlyEmission)} USDG over 30 days at the current rate. </>}
+            {perTokenDaily !== null && <>That's {perTokenDaily.toFixed(6)} USDG/day per $CSL staked. </>}
+            Rate resets whenever the pool is topped up — this isn't a fixed APR.
+          </p>
+        )}
 
         {/* stake/unstake card */}
         <div className="rounded-2xl border border-black/10 bg-black/[0.02] p-6 mb-10">
