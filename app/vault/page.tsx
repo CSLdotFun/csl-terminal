@@ -12,7 +12,7 @@ const money = (n: number) => `$${(Number(n) || 0).toLocaleString("en-US", { mini
 export default function Vault() {
   const { isConnected } = useAccount()
   const { getToken, authHeader } = useAuthToken()
-  const [stats, setStats] = useState<{ open: boolean; tvl: number; depositors: number; nav: number } | null>(null)
+  const [stats, setStats] = useState<{ open: boolean; tvl: number; depositors: number; nav: number; return7d: number; return30d: number; return7dPct: number | null; return30dPct: number | null } | null>(null)
   const [position, setPosition] = useState<{ netContributed: number; claimable: number } | null>(null)
   const [amt, setAmt] = useState("")
   const [msg, setMsg] = useState<string | null>(null)
@@ -84,12 +84,17 @@ export default function Vault() {
           and earns protocol fees — losses and gains are shared pro-rata by depositors.
         </p>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-3">
           <Card label="TVL" value={stats ? money(stats.tvl) : "$0.00"} />
           <Card label="Depositors" value={stats ? String(stats.depositors) : "0"} />
           <Card label="Vault NAV" value={stats ? money(stats.nav) : "$0.00"} />
+          <Card
+            label="Return (30d)"
+            value={stats ? `${stats.return30d >= 0 ? "+" : ""}${money(stats.return30d)}${stats.return30dPct !== null ? ` (${stats.return30dPct >= 0 ? "+" : ""}${stats.return30dPct.toFixed(2)}%)` : ""}` : "$0.00"}
+          />
           <Card label="Your claimable" value={position ? money(position.claimable) : "$0.00"} />
         </div>
+        <p className="text-[11px] text-[#0e1512]/35 mb-7 max-w-[600px]">Return (30d) is real fee-share earned minus bad debt absorbed, from the actual ledger — not a projected rate.</p>
 
         {isConnected ? (
           <div className="rounded-2xl border border-black/10 bg-black/[0.02] p-5 mb-10">
