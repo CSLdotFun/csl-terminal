@@ -14,11 +14,13 @@ export interface PnLCardData {
 
 const fmt = (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const FONT_BODY = "var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif"
-// The big percentage in the reference is a serif numeral, not sans — no
-// serif webfont is loaded anywhere in this project, so this uses a safe,
-// universally-available system serif stack rather than adding font-loading
-// complexity (and a risk of it not embedding correctly in the PNG export).
-const FONT_SERIF = "Georgia, 'Times New Roman', serif"
+// The big percentage needs an actual serif LOOK for everyone who views or
+// downloads the card, not "whatever serif happens to be installed on this
+// machine" (Georgia doesn't exist on every OS, and a silent fallback means
+// the shared PNG looks different depending on who generated it). Loading a
+// real Google Font makes it identical everywhere, on-screen and in the export.
+const SERIF_FONT_NAME = "PT Serif"
+const FONT_SERIF = `'${SERIF_FONT_NAME}', Georgia, serif`
 
 export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?: React.Ref<HTMLDivElement> }) {
   const { key, name, side, leverage, entry, mark, referralCode = "csl" } = data
@@ -41,6 +43,7 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
         color: "#ffffff",
       }}
     >
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@700&display=swap" />
       {/* decorative wave-line pattern — spans the FULL card width (was
           bunched up on the right half only, leaving the left/text side bare) */}
       <svg width="680" height="540" style={{ position: "absolute", inset: 0, opacity: 0.5 }} viewBox="0 0 680 540">

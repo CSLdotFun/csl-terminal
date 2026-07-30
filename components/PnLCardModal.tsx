@@ -12,6 +12,7 @@ export default function PnLCardModal({ data, onClose }: { data: PnLCardData; onC
     if (!ref.current) return
     setBusy(true)
     try {
+      try { await document.fonts.ready } catch {}
       const url = await toPng(ref.current, { pixelRatio: 2 })
       const a = document.createElement("a")
       a.href = url
