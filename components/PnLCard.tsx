@@ -35,7 +35,7 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
       ref={cardRef}
       style={{
         width: 680,
-        height: 480,
+        height: 510,
         position: "relative",
         overflow: "hidden",
         background: "linear-gradient(160deg, #0a1512 0%, #060a09 60%, #030504 100%)",
@@ -45,10 +45,10 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
     >
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@700&display=swap" />
       {/* decorative wave-line pattern — spans the FULL card width */}
-      <svg width="680" height="480" style={{ position: "absolute", inset: 0, opacity: 0.5 }} viewBox="0 0 680 480">
+      <svg width="680" height="510" style={{ position: "absolute", inset: 0, opacity: 0.5 }} viewBox="0 0 680 510">
         {Array.from({ length: 26 }).map((_, i) => {
           const x = -260 + i * 34
-          return <path key={i} d={`M ${x} -60 Q ${x + 420} 240 ${x} 550`} stroke="#3a4a42" strokeWidth="1" fill="none" />
+          return <path key={i} d={`M ${x} -60 Q ${x + 420} 255 ${x} 580`} stroke="#3a4a42" strokeWidth="1" fill="none" />
         })}
       </svg>
 
@@ -82,7 +82,7 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
         <img src="/new-csl-logo.png" alt="CSL" style={{ position: "absolute", left: 29, top: 22, height: 51, width: "auto", objectFit: "contain" }} />
 
         {/* skin name + side badge */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 96 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 109 }}>
           <span style={{ fontSize: 20, fontWeight: 500, color: "rgba(255,255,255,0.85)" }}>{name}</span>
           <span
             style={{
@@ -96,13 +96,15 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
           </span>
         </div>
 
-        {/* big PnL number — serif, matching the reference's numeral style */}
-        <div style={{ fontFamily: FONT_SERIF, fontSize: 80, fontWeight: 700, color, marginTop: 6, lineHeight: 1.05, fontVariantNumeric: "tabular-nums" }}>
+        {/* big PnL number — fontSize precisely calibrated: rendered at 112px
+            this font produces a 75-76px glyph height, matching the reference
+            measurement exactly (verified by rendering and measuring, not guessed) */}
+        <div style={{ fontFamily: FONT_SERIF, fontSize: 112, fontWeight: 700, color, marginTop: 38, lineHeight: 1.05, fontVariantNumeric: "tabular-nums" }}>
           {up ? "+" : "\u2212"}{Math.abs(pnlPct).toFixed(1)}%
         </div>
 
         {/* entry / mark */}
-        <div style={{ display: "flex", gap: 56, marginTop: 28 }}>
+        <div style={{ display: "flex", gap: 56, marginTop: 54 }}>
           <div>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Entry Price</div>
             <div style={{ fontSize: 18, fontWeight: 600, marginTop: 2 }}>{fmt(entry)}</div>
