@@ -59,7 +59,7 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
       {icon && (
         <div
           style={{
-            position: "absolute", right: -20, top: "50%", transform: "translateY(-50%) rotate(-8deg)",
+            position: "absolute", right: -20, top: "50%", transform: "translateY(-50%) rotate(-18deg)",
             width: 460, height: 300, display: "flex", alignItems: "center", justifyContent: "center",
           }}
         >
@@ -79,7 +79,7 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
         {/* logo — the REAL brand asset, unmodified. Its black outline blends
             into this dark background on its own (that's the point of an
             outline) — recoloring it earlier destroyed the letterforms. */}
-        <img src="/new-csl-logo.png" alt="CSL" style={{ position: "absolute", left: 29, top: 22, height: 51, width: "auto", objectFit: "contain" }} />
+        <img src="/new-csl-logo.png" alt="CSL" style={{ position: "absolute", left: 29, top: 22, height: 68, width: "auto", objectFit: "contain" }} />
 
         {/* skin name + side badge */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 109 }}>
