@@ -96,7 +96,10 @@ export default function Vault() {
             <div className="text-[11px] uppercase tracking-wider text-[#0e1512]/40 mb-3">Deposit or withdraw</div>
             {position && (
               <div className="text-xs text-[#0e1512]/50 mb-3">
-                Net contributed <span className="font-mono text-[#0e1512]">{money(position.netContributed)}</span> · Claimable now <span className="font-mono text-[#5f7a05] font-semibold">{money(position.claimable)}</span>
+                Net contributed <span className="font-mono text-[#0e1512]">{money(position.netContributed)}</span> · Claimable now <span className="font-mono text-[#5f7a05] font-semibold">{money(position.claimable)}</span> · Your vault PnL{" "}
+                <span className={`font-mono font-semibold ${position.claimable - position.netContributed >= 0 ? "text-[#5f7a05]" : "text-red-600"}`}>
+                  {position.claimable - position.netContributed >= 0 ? "+" : ""}{money(position.claimable - position.netContributed)}
+                </span>
               </div>
             )}
             <div className="flex gap-2 flex-wrap">
