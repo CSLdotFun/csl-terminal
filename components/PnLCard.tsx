@@ -35,7 +35,7 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
       ref={cardRef}
       style={{
         width: 680,
-        height: 540,
+        height: 480,
         position: "relative",
         overflow: "hidden",
         background: "linear-gradient(160deg, #0a1512 0%, #060a09 60%, #030504 100%)",
@@ -44,31 +44,34 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
       }}
     >
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@700&display=swap" />
-      {/* decorative wave-line pattern — spans the FULL card width (was
-          bunched up on the right half only, leaving the left/text side bare) */}
-      <svg width="680" height="540" style={{ position: "absolute", inset: 0, opacity: 0.5 }} viewBox="0 0 680 540">
+      {/* decorative wave-line pattern — spans the FULL card width */}
+      <svg width="680" height="480" style={{ position: "absolute", inset: 0, opacity: 0.5 }} viewBox="0 0 680 480">
         {Array.from({ length: 26 }).map((_, i) => {
           const x = -260 + i * 34
-          return <path key={i} d={`M ${x} -80 Q ${x + 420} 270 ${x} 620`} stroke="#3a4a42" strokeWidth="1" fill="none" />
+          return <path key={i} d={`M ${x} -60 Q ${x + 420} 240 ${x} 550`} stroke="#3a4a42" strokeWidth="1" fill="none" />
         })}
       </svg>
 
-      {/* skin image */}
+      {/* skin image — fixed bounding box + object-fit:contain, so a square
+          icon and a wide one both land at the same visual size/position
+          instead of "width:480, height:auto" producing wildly different
+          results depending on each skin's own native aspect ratio */}
       {icon && (
-        <img
-          src={icon}
-          alt=""
+        <div
           style={{
-            position: "absolute",
-            right: -40,
-            top: "50%",
-            transform: "translateY(-50%) rotate(-8deg)",
-            width: 480,
-            height: "auto",
-            objectFit: "contain",
-            filter: `drop-shadow(0 20px 60px rgba(0,0,0,0.6)) drop-shadow(0 0 40px ${color}22)`,
+            position: "absolute", right: -20, top: "50%", transform: "translateY(-50%) rotate(-8deg)",
+            width: 460, height: 300, display: "flex", alignItems: "center", justifyContent: "center",
           }}
-        />
+        >
+          <img
+            src={icon}
+            alt=""
+            style={{
+              maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto", objectFit: "contain",
+              filter: `drop-shadow(0 20px 60px rgba(0,0,0,0.6)) drop-shadow(0 0 40px ${color}22)`,
+            }}
+          />
+        </div>
       )}
 
       {/* content */}
@@ -110,8 +113,8 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
           </div>
         </div>
 
-        {/* referral, pinned to the bottom */}
-        <div style={{ marginTop: "auto" }}>
+        {/* referral */}
+        <div style={{ marginTop: 44 }}>
           <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Referral code:</div>
           <div style={{ fontSize: 16, fontWeight: 600, marginTop: 2 }}>csl.fun/trade?ref={referralCode}</div>
         </div>
