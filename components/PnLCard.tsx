@@ -35,7 +35,7 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
       ref={cardRef}
       style={{
         width: 680,
-        height: 510,
+        height: 580,
         position: "relative",
         overflow: "hidden",
         background: "linear-gradient(160deg, #0a1512 0%, #060a09 60%, #030504 100%)",
@@ -45,7 +45,7 @@ export default function PnLCard({ data, cardRef }: { data: PnLCardData; cardRef?
     >
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@700&display=swap" />
       {/* decorative wave-line pattern — spans the FULL card width */}
-      <svg width="680" height="510" style={{ position: "absolute", inset: 0, opacity: 0.5 }} viewBox="0 0 680 510">
+      <svg width="680" height="580" style={{ position: "absolute", inset: 0, opacity: 0.5 }} viewBox="0 0 680 580">
         {Array.from({ length: 26 }).map((_, i) => {
           const x = -260 + i * 34
           return <path key={i} d={`M ${x} -60 Q ${x + 420} 255 ${x} 580`} stroke="#3a4a42" strokeWidth="1" fill="none" />
