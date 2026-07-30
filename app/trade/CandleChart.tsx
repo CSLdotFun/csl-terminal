@@ -4,22 +4,49 @@ import { useEffect, useRef } from "react"
 
 export type Candle = { time: number; open: number; high: number; low: number; close: number }
 
+export type PositionLine = { price: number; color: string; title: string }
+
 // SSR-safe TradingView lightweight-charts chart.
 // - `candles` : full series, re-applied via setData whenever its reference changes
 // - `live`    : latest forming candle, applied via series.update on each tick
 // - `mode`    : "candles" for intraday tick data (real OHLC), "line" for daily/
 //               weekly history that only has one price per bucket (drawing
 //               those as candlesticks produces the flat sticks / dots you saw)
-export default function CandleChart({ candles, live, mode = "candles" }: { candles: Candle[]; live?: Candle | null; mode?: "candles" | "line" }) {
+// - `positionLines` : horizontal dashed lines for an open position on this
+//               market (entry + liquidation), the way Hyperliquid and most
+//               perp exchanges mark where you're actually positioned.
+export default function CandleChart({ candles, live, mode = "candles", positionLines }: { candles: Candle[]; live?: Candle | null; mode?: "candles" | "line"; positionLines?: PositionLine[] }) {
   const elRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<any>(null)
   const seriesRef = useRef<any>(null)
   const modeRef = useRef<"candles" | "line">(mode)
   const dataRef = useRef<Candle[]>(candles)
   const didInitData = useRef(false)
+  const priceLinesRef = useRef<any[]>([])
+
+  const applyPositionLines = (series: any, lines: PositionLine[] | undefined) => {
+    for (const l of priceLinesRef.current) { try { series.removePriceLine(l) } catch {} }
+    priceLinesRef.current = []
+    if (!series || !lines) return
+    for (const l of lines) {
+      if (!Number.isFinite(l.price) || l.price <= 0) continue
+      try {
+        priceLinesRef.current.push(series.createPriceLine({
+          price: l.price,
+          color: l.color,
+          lineWidth: 1,
+          lineStyle: 2, // dashed
+          axisLabelVisible: true,
+          title: l.title,
+        }))
+      } catch {}
+    }
+  }
 
   dataRef.current = candles
   modeRef.current = mode
+  const positionLinesRef2 = useRef<PositionLine[] | undefined>(positionLines)
+  positionLinesRef2.current = positionLines
 
   const applyData = (series: any, arr: Candle[], m: "candles" | "line") => {
     if (m === "line") {
@@ -87,6 +114,7 @@ export default function CandleChart({ candles, live, mode = "candles" }: { candl
       ;(series as any).__mode = modeRef.current
       chartRef.current = chart
       seriesRef.current = series
+      applyPositionLines(series, positionLinesRef2.current)
       if (dataRef.current?.length) {
         applyData(series, dataRef.current, modeRef.current)
         fitView(chart, dataRef.current.length)
@@ -112,11 +140,19 @@ export default function CandleChart({ candles, live, mode = "candles" }: { candl
       const s = makeSeries(ch, mode)
       ;(s as any).__mode = mode
       seriesRef.current = s
+      applyPositionLines(s, positionLinesRef2.current)
     }
     applyData(seriesRef.current, candles, mode)
     fitView(ch, candles.length)
     didInitData.current = true
   }, [candles, mode])
+
+  // entry/liquidation lines for whatever position is open on this market —
+  // reapply whenever they change (position opened/closed, market switched)
+  useEffect(() => {
+    if (!seriesRef.current) return
+    applyPositionLines(seriesRef.current, positionLines)
+  }, [positionLines])
 
   // live forming-candle updates (only meaningful for candle mode)
   useEffect(() => {

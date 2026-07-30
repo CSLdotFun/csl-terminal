@@ -4,7 +4,7 @@ import TNav from "@/components/TNav"
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import { ArrowLeft, TrendingUp, TrendingDown, Zap, X, User, Share2 } from "lucide-react"
-import CandleChart, { type Candle } from "./CandleChart"
+import CandleChart, { type Candle, type PositionLine } from "./CandleChart"
 import { useAccount } from "wagmi"
 import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { loadAccount, saveAccount, type ClosedTrade } from "@/lib/account"
@@ -314,6 +314,15 @@ export default function TradeTerminal() {
   }, [applyUpdates])
 
   const selMarket = markets.find((m) => m.key === selected)
+  const marketPositionLines = useMemo((): PositionLine[] => {
+    const lines: PositionLine[] = []
+    for (const p of positions) {
+      if (p.key !== selected) continue
+      lines.push({ price: p.entry, color: "#8a94a0", title: `Entry ${p.side === "long" ? "LONG" : "SHORT"} ${p.leverage}x` })
+      lines.push({ price: p.liq, color: "#f59e0b", title: "Liq." })
+    }
+    return lines
+  }, [positions, selected])
   const mark = selMarket?.price ?? 0
   const funding = selMarket?.funding ?? 0
   const tfSec = TF_CFG[chartTf].sec
@@ -614,7 +623,7 @@ export default function TradeTerminal() {
               ))}
               <span className="ml-2 text-[11px] text-[#0e1512]/25">scroll to zoom · drag to pan</span>
             </div>
-            <div className="flex-1 min-h-0"><CandleChart candles={candles} live={liveCandle} mode="line" /></div>
+            <div className="flex-1 min-h-0"><CandleChart candles={candles} live={liveCandle} mode="line" positionLines={marketPositionLines} /></div>
           </div>
 
           {/* positions — Hyperliquid style */}
