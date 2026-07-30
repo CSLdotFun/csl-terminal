@@ -43,6 +43,20 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#050b14] text-white overflow-x-hidden">
+      {/* $CSL contract banner */}
+      <div className="w-full bg-[#CDF60A] text-[#0e1512] text-xs sm:text-sm font-semibold py-2 px-3 flex items-center justify-center gap-2 flex-wrap text-center">
+        <span>$CSL is live:</span>
+        <code className="font-mono bg-black/10 px-1.5 py-0.5 rounded break-all">0x664f813ba5568966b8c7aaa03ef2218658a57777</code>
+        <a
+          href="https://robinhoodchain.blockscout.com/token/0x664f813ba5568966b8c7aaa03ef2218658a57777"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:no-underline"
+        >
+          View on-chain
+        </a>
+      </div>
+
       {/* Full-screen Hero */}
       <section className="relative h-screen min-h-[620px] w-full overflow-hidden">
         {/* Background layers */}
